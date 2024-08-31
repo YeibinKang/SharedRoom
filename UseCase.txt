@@ -1,0 +1,21 @@
+Determine the user
+    : a target is who wants to use a shared room for travel in Toronto.
+Indentify user's goals
+    : find and save a room they want to stay during a travel.
+
+1. Room detail page Use Cases
+
+Define the process
+    : A user selects a room from a home page (a list of rooms)
+    : A user can see room details when they click a picture from the list.
+    : It shows room details including photo, name, price, room explanation, available dates.
+    : A user selects a data that they want to check-in/check-out
+    (User should be logged in before saving a room)
+        - if the data is already taken, an error message should pop up.
+        - if the data is available, user can click a save button.
+            : A user can check their reservation in the my page navigation bar.
+
+
+My-page
+    Update user information
+    : user cannot change the information

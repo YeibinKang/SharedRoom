@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const roomSchema = require('../models/roomModel.cjs');
 
 const userSchema = new mongoose.Schema({
     userID: {type:String,required: true, unique: true},
@@ -6,7 +7,7 @@ const userSchema = new mongoose.Schema({
     phone: {type:String},
     startDate: {type: Date},
     endDate: {type: Date},
-    numberOfPeople: {type: Number}
+    numberOfPeople: {type: Number},
 });
 
 const User = mongoose.model('User', userSchema);

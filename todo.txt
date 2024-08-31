@@ -1,26 +1,9 @@
-RoomDetailPage:
-1. 예약 버튼
-    V - 예약 버튼
-    - 선택된 날짜가 user의 db에 저장 되어야함
-    - 선택된 날짜 room db 저장
-    - user 정보에서 예약 정보 보여주기? (My page? Reservation Page?)
-2. 이미 예약된 날짜
-    - 그 기간은 불가능하다는 표시? (이게 가능할까...)
-
-LogInPage:
-1. 로그인 기능
-
-RegisterPage:
-1. Register 기능
-    - db 저장과 연동
+1. My page  
+    User information update
+    - show current value at the input box
 
 
-DB
-1. User DB 안에 Room DB 포함하기?
+Is user logged-in?
+    :using JWT token? cookie?
 
-
-Git
-1. Make a repo
-2. Upload
-
-
+Join statement for reservation

@@ -1,31 +1,28 @@
 import bcrypt, { compare } from "bcrypt";
-import User from "../../backend/models/userModel.cjs";
-
+import pool from "../db.cjs";
 
 // Create a hashed password function
-const createHashedPW = function (req, res) {
+const createHashedPW = function (user_id, user_password) {
     const salt = 10;
     const saltRounds = 10;
-    const userPW = req.body.userPW;
+
     bcrypt
         .genSalt(saltRounds)
         .then(salt => {
             console.log('Salt: ', salt);
-            return bcrypt.hash(userPW, salt);
+            return bcrypt.hash(user_password, salt);
         })
         .then(hashedPW => {
             console.log('Hash: ', hashedPW);
-            const newUser = new User({
-                userID: req.body.userID,
-                userPW: hashedPW,
-            });
-            console.log(`User's pw from body: ${req.body.usePW}`);
-            console.log(`User's writing pw : ${newUser}`);
-            console.log(`hashed pw: ${hashedPW}`);
+            //TODO: Update user's pw with hashed version
+            //const newPW = pool.query("INSERT INTO app_user (user_name, user_password, user_phone, user_email) VALUES ($1, $2, $3, $4)", []);
+            
+            const updatedPW = pool.query("UPDATE app_user SET user_password = $1 WHERE user_id = $2", [hashedPW, user_id]);
+            console.log(`updated : `);
 
-            newUser.save();
+            //return res.status(200).json(updatedPW);
 
-            return res.status(200).json(newUser);
+          
         })
         .catch(err => console.log(err.message))
 

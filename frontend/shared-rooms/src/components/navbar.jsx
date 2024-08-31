@@ -26,6 +26,10 @@ export default function Navbar() {
             <li>
               <a className="text-gray-500 transition hover:text-gray-500/75" href="/AboutPage"> About us </a>
             </li>
+
+            <li>
+              <a className="text-gray-500 transition hover:text-gray-500/75" href="/AboutPage"> My Page </a>
+            </li>
           </ul>
         </nav>
 

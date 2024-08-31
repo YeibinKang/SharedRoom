@@ -8,9 +8,12 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import cors from 'cors';
 
+import pool from "./db.cjs";
+
 import createHashedPW from "./authentication/createHashedPW.mjs";
 import generateToken from "./authentication/generateToken.mjs";
 import cookieParser from "cookie-parser";
+//import { createSearchIndex } from "./models/roomModel.cjs";
 
 var app = express();
 app.use(cors());
@@ -20,314 +23,275 @@ app.use(cookieParser());
 dotenv.config();
 
 const require = createRequire(import.meta.url);
-
-const Room = require('./models/roomModel.cjs');
-const User = require('./models/userModel.cjs');
-
-//TODO:Additional
-const RoomData = require('./models/dataModel.cjs');
-const UserData = require('./models/dataModel.cjs');
-
 const sercretKey = process.env.JWT_SECRET;
 
-// DB connection
-mongoose.connect(dbURL)
-    .then(() => {
-        console.log('App is connected to db');
 
-    })
-    .catch((err) => {
-        console.log(err);
-    });
+// create a room
+app.post("/room", async(req, res)=>{
+    try{
+        const room_name = req.body.room_name;
+        const room_price = req.body.room_price;
+        const room_description = req.body.room_description;
+        const room_photo = req.body.room_photo;
 
-// Room
-// GET method route
-app.get('/', async (req, res) => {
+        const newRoom = await pool.query("INSERT INTO room (room_name, room_price, room_description, room_photo) VALUES($1, $2, $3, $4)", [room_name, room_price, room_description, room_photo]);
+
+        res.status(200).json(newRoom);
+
+    }catch(err){
+        console.error(`Error occured while creating a room: ${err.message}`);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// get all rooms
+app.get("/rooms", async(req, res) => {
+    try {   
+
+        const allRooms = await pool.query("SELECT * FROM room");
+        res.status(200).json(allRooms.rows);
+
+    } catch (error) {
+        console.error(`Error occured while getting all rooms: ${error.message}`)
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// get a room
+app.get("/room/:id", async(req,res)=>{
     try {
-        const rooms = await Room.find();
-        res.json(rooms);
+        const currentRoomID = req.params.id;
+        const currentRoom = await pool.query("SELECT * FROM room WHERE room_id = $1", [currentRoomID]);
+        res.status(200).json(currentRoom.rows);
 
-    } catch (err) {
-        res.status(500).json({ error: 'Internal server error' });
+    } catch (error) {
+        console.error(`Error occured while getting a room: ${error.message}`);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// update a room information
+app.put("/room/:id", async(req, res) => {
+    try {
+        const currentRoomID = req.params.id;
+        const updateRoomInfo = req.body;
+        const currentRoom = await pool.query("UPDATE room SET room_name = $1, room_price = $2, room_description = $3, room_photo = $4 WHERE room_id = $5", [updateRoomInfo.room_name, updateRoomInfo.room_price, updateRoomInfo.room_description,updateRoomInfo.room_photo, currentRoomID]);
+        res.status(200).json(currentRoom.rows);
+        
+    } catch (error) {
+        console.error(`Error occured while updating a room: ${error.message}`);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// delete a room
+app.delete("/room/:id", async(req, res) => {
+    try {
+        const currentRoomID = req.params.id;
+    
+        const deleteRoom = await pool.query("DELETE FROM room WHERE room_id = $1", [currentRoomID]);
+        res.status(200).json(deleteRoom.rows);
+        
+    } catch (error) {
+        console.error(`Error occured while deleting a room: ${error.message}`);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// create a user
+    //user_name shouldn't be duplicated
+    //user_password should be hashed
+app.post("/user", async(req, res)=>{
+
+    try{
+        const user_name = req.body.user_name;
+        const user_password = req.body.user_password;
+        const user_email = req.body.user_email;
+        const user_phone = req.body.user_phone;
+        const user_id = req.body.user_id;
+
+        const isNameExist = await pool.query("SELECT * FROM app_user WHERE user_id = $1", [user_id])
+        .then((user) => {
+            try {
+                if(!user){
+                    console.error(`Error occured while creating User: user_name is already exist: ${error.message}`);
+                }else{
+                    const newUser = pool.query("INSERT INTO app_user (user_name, user_password, user_email, user_phone) VALUES($1, crypt($2, gen_salt('md5')), $3, $4)", [user_name, user_password, user_email, user_phone]);
+
+                    res.status(200).json(newUser);
+        
+                }
+ 
+            } catch (error) {
+                console.error(`Error occured while checking a user exist: ${error.message}`);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+
+    }catch(err){
+        console.error(`Error occured while creating a user: ${err.message}`);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 
 });
 
-//TODO: TESTED Add Roomdb into Userdb (in dataModel.cjs)
-// POST method route CREATE
-app.post('/data/', async (req, res) => {
+// update user information
+    // cannot change user name
+
+app.put("/user/:id", async(req, res)=>{
+
     try {
-
-        const tempUser = new UserData({
-            userID: req.body.userID,
-            userPW: req.body.userPW,
+        const currentUserId = req.params.id;
+        console.log(`current user's id: ${currentUserId}`);
+        const currentUser = pool.query("SELECT * FROM app_user WHERE user_id = ($1)", [currentUserId])
+        .then((user)=>{
+            console.log(`Current user's name: ${user.rows[0].user_name}`);
         });
+        
+       
+        const updateUserInfo = req.body;
 
-        console.log(`room's name: ${req.body.rooms[0].name}`);
-        tempUser.rooms.push({
-                name: req.body.rooms[0].name,
-                price: req.body.rooms[0].price,
-                details: req.body.rooms[0].details,
-                photo: req.body.rooms[0].photo,
+        const updateInfo = await pool.query("UPDATE app_user SET user_password = crypt($1, gen_salt('md5')), user_phone = $2, user_email = $3 WHERE user_id = $4", [updateUserInfo.user_password, updateUserInfo.user_phone, updateUserInfo.user_email, currentUserId])
+        .then((user)=>{
+            res.status(200).json(user);
         });
+        
+    } catch (error) {
+        console.error(`Error occured while updating a user info: ${error.message}`);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 
-        // const newUser = await new UserData({
+});
+
+// delete user
+app.delete('/user/:id', async(req, res)=>{
+    try {   
+
+        // current id
+        const currentUserId = req.params.id;
+        console.log(`current user's id: ${currentUserId}`);
+
+        const currentUser = pool.query("DELETE FROM app_user WHERE user_id = ($1)", [currentUserId])
+        .then((user)=>{
             
-        //     // room: {
-        //     //     name: req.body.room.name,
-        //     //     price: req.body.room.price,
-        //     //     details: req.body.room.details,
-        //     //     photo: req.body.room.photo,
-        //     // }
-        // });
-
-        // newUser.room.push({
-        //     name: req.body.room.name,
-        //     price: req.body.room.price,
-        //     details: req.body.room.details,
-        //     photo: req.body.room.photo
-        // });
-
-        //newUser.save();
-
-        tempUser.save();
-        return res.status(200).json(tempUser);
-
-    } catch (err) {
-        console.error(`POST failed for creating room :`, err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// GET method with id
-app.get('/:id', async (req, res) => {
-    try {
-        const room = await Room.findById(req.params.id);
-        if (!room) {
-            res.status(404).json({ error: 'Room not found' });
-        }
-        res.json(room);
-
-    } catch (err) {
-        res.status(500).json({ error: 'Internal server error' });
-    }
-})
-
-// POST method route CREATE
-app.post('/', async (req, res) => {
-    try {
-
-        const newRoom = await new Room({
-            name: req.body.name,
-            price: req.body.price,
-            details: req.body.details,
-            photo: req.body.photo,
+            if(user.rowCount == 0){
+                console.log(`User is deleted`);
+                res.status(200);
+            }else{
+                console.log(`User hasn't deleted`);
+            }
+            
         });
-        newRoom.save();
-        return res.status(200).json(newRoom);
 
-    } catch (err) {
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
+        // TODO: User should be logged out.
 
-// PUT method - Edit
-app.put('/:id', async (req, res) => {
-    //res.send('PUT request to the homepage');
-    const roomId = req.params.id;
-    try {
-        // if id is matched with one of data (using findById())
-        // edit the data
-
-        const currentRoom = await Room.findById(roomId);
-
-        if (!currentRoom) {
-            return res.status(400).json({ error: `Room not found for ID: ${roomId}` })
-        } else {
-
-            currentRoom.name = req.body.name;
-            currentRoom.price = req.body.price;
-            currentRoom.details = req.body.details;
-            currentRoom.photo = req.body.photo;
-
-            currentRoom.save();
-            console.log(`Saved ${currentRoom} for id ${roomId}`);
-        }
-
-        return res.status(200).json(currentRoom);
-
-    } catch (err) {
-        console.error(`PUT failed for ${roomId}`, err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-})
-
-// DELETE
-app.delete('/:id', async (req, res) => {
-
-    try {
-
-        const currentRoom = await Room.findById(req.params.id);
-        console.log(currentRoom);
-
-        if (!currentRoom) {
-            console.log("Room not found");
-        } else {
-            const deleteRoom = await Room.deleteOne(currentRoom);
-
-            return res.status(200).json(deleteRoom);
-        }
-
-    } catch (err) {
+        
+    } catch (error) {
+        console.error(`Error occured while deleting a user: ${error.message}`);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
 
 
-// Create a user information
-app.post('/registration', async (req, res) => {
-    // not duplicated,
-    //create one user
-    // duplicated, error
-    const userId = req.body.userID;
-    const idExisted = await User.findOne({ userID: userId })
-        .then((user) => {
+// create a reservation
+app.post("/reservation/:id", async(req, res)=>{
+    try{
+
+        const currentRoomId = req.params.id; //todo: user should click the room and room's id will be in parameter
+        const start_date = req.body.start_date;
+        const end_date = req.body.end_date;
+        const stay_days = calculateDays(start_date, end_date);
+        const user_id = 1; //todo: need to get a id from cookie?
+        let total_price = 0;
+        const newReservation = pool.query("INSERT INTO reservation (start_date, end_date, roomd_id, user_id) VALUES($1 $2 $3 $4)",[start_date, end_date, currentRoomId, user_id])
+
+        let price_per_night = pool.query("SELECT (room_price) FROM room WHERE room_id = $1", [currentRoomId])
+        .then((room)=>{
             try {
-                if (user) {
-                    console.error(`User Registration FAIL for ${userId}: Duplicated user ID `, error);
-                } else {
-                    createHashedPW(req, res);
+                if(room.rowCount == 0){
+                    console.log(`No room to be matched`);
+                }else{
+                    price_per_night = room.rows[0].room_price;
+                    
 
+                    console.log("total price: ", stay_days * price_per_night);
+
+                    total_price = price_per_night * stay_days;
+
+                    pool.query("UPDATE reservation SET total_price = $1 WHERE room_id = $2", [total_price, currentRoomId]);
                 }
-            } catch (err) {
-                console.error(`POST failed for ${userId}`, err);
-                res.status(500).json({ error: 'Internal server error' });
+            } catch (error) {
+                console.log(`Error occured while getting a price per night: ${error.message}`);
             }
-
         });
-});
-
-// User information update
-// pre-requirement: user Must be logged in. 
-app.put('/user/edit/:id', async (req, res) => {
-    // TODO: is the user logged in?
-    // when user clicks the edit button, the link should have the user's id
-    // no need to check..??
-    const currentUserId = req.params.id;
-    try {
-
-        const currentUser = await User.findById(currentUserId);
-        console.log(`Current user is ${currentUser.userID}`);
-
-        createHashedPW(req, res);
-
-        currentUser.phone = req.body.phone;
-
-        console.log(`Updated ${currentUser.userID}`);
-
-        currentUser.save();
-
-        return res.status(200).json(currentUser);
-
-    } catch (err) {
-        console.error(`PUT failed for ${currentUserId}`, err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-
-});
-
-// User information delete
-app.delete('/user/delete/:id', async (req, res) => {
-    //TODO: check if the user is logged in
-    const currentUserId = req.params.id;
-
-    try {
-        const currentUser = await User.findById(currentUserId);
-        console.log(`Current user is ${currentUser.userID}`);
-
-        if (!currentUser) {
-            console.log("User not found");
-        } else {
-            const deleteUser = await User.deleteOne(currentUser);
-            console.log(`${deleteUser.userID} is deleted`);
-
-            //TODO: the user should be logged out
-
-
-            return res.status(200).json(deleteUser);
-        }
-
-    } catch (err) {
-        console.error(`DELETE failed for ${currentUserId}`, err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-})
-
-
-// User Login
-// TODO: GET?? 
-app.post('/user/login', async (req, res) => {
-    const user = await User.findOne({ userID: req.body.userID });
-    try {
-
-        const isPWMatched = await bcrypt.compare(req.body.userPW, user.userPW);
-        console.log(`The answer from compare PW: ${isPWMatched}`);
-
-        if (isPWMatched) {
-            //login
-            //const token = generateToken(user, req, res);
-            const token = jwt.sign({ id: user.userID, role: "user" }, process.env.JWT_SECRET);
-            return res.cookie("access_token", token, { httpOnly: true, secure: process.env.JWT_SECRET })
-                .status(200)
-                .json({ message: "Cookie is created" });
-        }
-    } catch (err) {
-        console.error(`POST failed for ${user.userID} Login`, err);
-        res.status(500).json({ error: 'Internal server error' });
+    
+        res.status(200).json(newReservation);
+        
+        
+    }catch(err){
+        console.error(`Error occured while creating a reservation: ${err.message}`);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-//user make a reservation
-// update data 
-// TODO: bring current user
-// add room information in userDB
-// PUT
-// app.put('/user/reservation/:id', async (req, res) => {
-//     const currentUserId = req.params.id;
+// calculate stay days
+function calculateDays(startDate, endDate){
+    let start_date = new Date(startDate);
+    let end_date = new Date(endDate);
 
-//     try {
-//         const currentUser = await User.findById(currentUserId);
+    let difference_in_time = end_date.getTime() - start_date.getTime();
+    let difference_in_days = Math.round(difference_in_time/(1000*3600*24));
+
+    return difference_in_days;
+}
+
+// get a list of reservations
+    // show current user's reservations in my-page
+    // todo: getting current user's id from cookie?
+app.get("/reservations/:id", async(req, res)=>{
+    try {   
+
+        const currentUserId = req.params.id;
+        
+        const allReservations = await pool.query("SELECT * FROM reservation r INNER JOIN room rm ON r.room_id = rm.room_id AND user_id = $1", [currentUserId])
+        .then((reservations)=>{
+            try 
+            {
+                if(reservations.rowCount != 0){
+                    console.log(`${reservations.rowCount} of reservations are selected`);
+                    res.status(200).json(reservations.rows);
+                }else{
+                    console.log(`No reservations`);
+                }
+                
+                
+            } catch (error) {
+                console.error(`Error occured while getting all rooms: ${error.message}`)
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+    } catch (error) {
+        console.error(`Error occured while getting all rooms: ${error.message}`)
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+    
+// update a reservation
+    //todo: how to find current user
+app.put("/reservation/:id", async(req, res)=>{
+
+});
+
+
+// delete a reservation
+// check available rooms in selected date
 
 
 
-//         console.log(`Current user is ${currentUser.userID}`);
-
-//         if (!currentUser) {
-//             console.log("User not found");
-//         } else {
-//             // todo: edit user's db
-//             currentUser.rooms.name = req.body.roomName;
-//             currentUser.rooms.price = req.body.roomPrice;
-//             currentUser.rooms.details = req.body.roomDetails;
-//             currentUser.rooms.photo = req.body.roomPhoto;
-
-//             currentUser.save();
-//             console.log(`Saved ${currentRoom} for id ${roomId}`);
-
-
-//             return res.status(200).json(deleteUser);
-//         }
-
-//     } catch (err) {
-//         console.error(`Edit failed for ${currentUserId}`, err);
-//         res.status(500).json({ error: 'Internal server error' });
-//     }
-
-
-// });
-
-//TEST
-//TODO: POST
 
 
 
