@@ -1,19 +1,11 @@
 import express from "express";
-import mongoose from "mongoose";
-import { PORT, dbURL } from "./config.js";
+import { PORT } from "./config.js";
 import { createRequire } from 'module';
 import { error } from "console";
-import bcrypt, { compare } from "bcrypt";
-import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import cors from 'cors';
-
 import pool from "./db.cjs";
-
-import createHashedPW from "./authentication/createHashedPW.mjs";
-import generateToken from "./authentication/generateToken.mjs";
 import cookieParser from "cookie-parser";
-//import { createSearchIndex } from "./models/roomModel.cjs";
 
 var app = express();
 app.use(cors());
@@ -247,8 +239,9 @@ function calculateDays(startDate, endDate){
 }
 
 // get a list of reservations
-    // show current user's reservations in my-page
-    // todo: getting current user's id from cookie?
+    // it show current user's reservations in my-page
+    // id in param is user's id
+    // todo: getting current user's id from cookie, 
 app.get("/reservations/:id", async(req, res)=>{
     try {   
 
@@ -265,7 +258,6 @@ app.get("/reservations/:id", async(req, res)=>{
                     console.log(`No reservations`);
                 }
                 
-                
             } catch (error) {
                 console.error(`Error occured while getting all rooms: ${error.message}`)
                 return res.status(500).json({ error: 'Internal server error' });
@@ -279,15 +271,29 @@ app.get("/reservations/:id", async(req, res)=>{
 });
 
 
+// delete a reservation
+    // user clicks a delete button from a reservation list to delete
+    // todo: current logged in user, selected room id
+    // id = reservation id
+app.delete("/reservation/:id", async(req, res)=>{
+    try {
+        const currentReservationId = req.params.id;
     
-// update a reservation
-    //todo: how to find current user
-app.put("/reservation/:id", async(req, res)=>{
-
+        const deleteReservation = await pool.query("DELETE FROM reservation WHERE reservation_id = $1", [currentReservationId])
+        .then((deleted)=>{
+            if(deleted.rowCount == 0){
+                console.log(`success to delete : ${deleted.rowCount}`);
+                res.status(200);
+            }
+        });      
+        
+        
+    } catch (error) {
+        console.error(`Error occured while deleting a room: ${error.message}`);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-
-// delete a reservation
 // check available rooms in selected date
 
 
