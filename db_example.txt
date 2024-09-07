@@ -1,0 +1,14 @@
+#Reservation DB
+INSERT INTO reservation (reservation_id, total_price, start_date, end_date, user_id, room_id) 
+			VALUES(1, 200, '2024-09-01', '2024-09-05', 1, 1);
+INSERT INTO reservation (reservation_id, total_price, start_date, end_date, user_id, room_id) 
+			VALUES(2, 600, '2024-09-05', '2024-09-11', 3, 3);
+INSERT INTO reservation (reservation_id, total_price, start_date, end_date, user_id, room_id) 
+			VALUES(3, 120, '2024-08-05', '2024-08-11', 4, 4);
+INSERT INTO reservation (reservation_id, total_price, start_date, end_date, user_id, room_id) 
+			VALUES(4, 300, '2024-09-16', '2024-09-20', 6, 4);
+
+# Available rooms check
+SELECT * FROM room
+WHERE room_id IN (SELECT room_id from reservation 
+						WHERE start_date >= DATE('2024-09-05') OR end_date <= DATE('2024-09-01'));

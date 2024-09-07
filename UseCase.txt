@@ -3,19 +3,23 @@ Determine the user
 Indentify user's goals
     : find and save a room they want to stay during a travel.
 
-1. Room detail page Use Cases
+<<Process>>
+User selects wanted dates (start/endDate) from a Homepage
+    - it shows a list of available rooms
+User selects wanted room from the list
+    - it leads a room detail page
 
-Define the process
-    : A user selects a room from a home page (a list of rooms)
-    : A user can see room details when they click a picture from the list.
-    : It shows room details including photo, name, price, room explanation, available dates.
-    : A user selects a data that they want to check-in/check-out
-    (User should be logged in before saving a room)
-        - if the data is already taken, an error message should pop up.
-        - if the data is available, user can click a save button.
-            : A user can check their reservation in the my page navigation bar.
 
 
 My-page
     Update user information
-    : user cannot change the information
+    : user cannot change the information\
+
+
+오빠! quick question! 
+지금 하고 있는 프로젝트.. 
+
+object를 fetch해서 잘 받아와서 rendering을 해서 화면에 보여주려고 하는데, rendering이 안되는 상황..
+: 혹시 render를 하는 기능을 fetch 후에 then statement 안에서 하려고 했는데,이 컨셉 부터가 잘못 된걸까?
+근데 then statement 안에서 설정한 값은 global 하게 볼 수가 없으니.. 어떻게 하는게 좋을까?
+검색하다보니 fetch를 하는 함수를 async로 하고, 그 값을 await 한 다음에 global 변수에 넣으라는데.. 이 방법은 맞는걸까? 

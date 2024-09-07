@@ -270,6 +270,27 @@ app.get("/reservations/:id", async(req, res)=>{
     }
 });
 
+// Get available dates based on selected start/endDate
+app.get("/reservations", async(req,res)=>{
+    
+    const startDateFromQuery = req.query.startDate;
+    const endDateFromQuery = req.query.endDate;
+
+    try {
+        // Serach available rooms
+        const availableRooms = pool.query(`SELECT * FROM room WHERE room_id IN (SELECT room_id from reservation WHERE start_date >= TO_DATE('${startDateFromQuery}'::text, 'YYYY-MM-DD') OR end_date <= TO_DATE('${endDateFromQuery}'::text, 'YYYY-MM-DD'));`)
+        .then((rooms)=>{
+            //res.status(200).json(rooms.rows);
+            return res.status(200).json(rooms.rows);
+        });
+        //return availableRooms;
+        
+    } catch (error) {
+        console.error(`Error occured while getting available rooms: ${error.message}`);
+    }
+});
+
+
 
 // delete a reservation
     // user clicks a delete button from a reservation list to delete
@@ -293,11 +314,6 @@ app.delete("/reservation/:id", async(req, res)=>{
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-// check available rooms in selected date
-
-
-
 
 
 

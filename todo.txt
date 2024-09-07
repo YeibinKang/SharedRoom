@@ -6,4 +6,3 @@
 Is user logged-in?
     :using JWT token? cookie?
 
-Join statement for reservation

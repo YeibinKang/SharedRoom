@@ -1,21 +1,27 @@
 // Select StartDate, EndDate by using useSate, dates will be saved in DB
 // when a user clicks save button, 
-    // data will be saved in DB and show a list of rooms in available dates
+// available dates will be shown. by using Fetch()
 
 
-import React, { useState } from "react";
+//fetch 할 때 localhost:// 안 붙인 것
+// api call GET 할 때 날짜에 '' 안 붙인 것
 
+import { useState } from "react";
+
+let availableRooms = [];
 
 export default function Calendar() {
     const [startDate, setStartDate] = useState();
     const [endDate, setEndDate] = useState();
-    const [dateValue, setDateValue] = useState();
 
-    //TODO: how to save data in DB??
+
     const onChangeStartDate = (e) => {
+
         const dateValue = e;
         console.log("selected date: ", dateValue);
         setStartDate(dateValue);
+        console.log("date value's data type: ", typeof (dateValue));
+
     }
 
     const onChangeEndDate = (e) => {
@@ -24,38 +30,60 @@ export default function Calendar() {
         setEndDate(dateValue);
     }
 
-    //todo: STUDY fetch()
-        //https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    function updateDates(){
-        
-        fetch('http://localhost:5555/reservation/1', {
-            method:'POST',
-            headers:{
+    //todo: using useState for saving data
+    function getAvailableRooms() {
+
+        fetch(`http://localhost:5555/reservations?startDate=${startDate}&endDate=${endDate}`, {
+            method: 'GET',
+            headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({start_date:startDate, end_date:endDate})
+            }
         })
-        .then(res => {
-            return res.text();
-        })
-        .then(data => {
-            alert(data);
-        })
+            .then(res => res.json())
+            .then((data) => {
+                
+                console.log(data);
+
+                //todo: render rooms in screen
+                    //should do it globally...
+                const rooms = data.map((room) =>
+
+                    <li key={room.room_id}>
+                        <li>{room.room_name}</li>
+                        <li>{room.room_price}</li>
+                        <li>{room.room_description}</li>
+                    </li>
+                )
+                
+                return (
+                    <div>
+                        <ul>{rooms}</ul>
+                    </div>
+                    
+                );
+
+            });
+
+            
+
+            
+            console.log(`this: ${availableRooms}`);
+
     }
 
 
-    
-    return (
 
+    return (
+        
         <div>
-            
+
             {/*
   Heads up! 👋
 
   Plugins:
     - @tailwindcss/forms
 */}
-
+            
             <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-lg text-center">
                     <h1 className="text-2xl font-bold sm:text-3xl">When do you want to stay?</h1>
@@ -73,7 +101,7 @@ export default function Calendar() {
                         <div className="relative">
                             <lable>Select your start date</lable>
                             <input
-                                type="date" onChange={(e)=>onChangeStartDate(e.target.value)}
+                                type="date" onChange={(e) => onChangeStartDate(e.target.value)}
                                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                             />
 
@@ -101,9 +129,9 @@ export default function Calendar() {
                         <label htmlFor="date" className="sr-only">End Date</label>
 
                         <div className="relative">
-                        <lable>Select your end date</lable>
+                            <lable>Select your end date</lable>
                             <input
-                                type="date" onChange={(e)=>onChangeEndDate(e.target.value)}
+                                type="date" onChange={(e) => onChangeEndDate(e.target.value)}
                                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                             />
 
@@ -123,6 +151,9 @@ export default function Calendar() {
                                     />
                                 </svg>
                             </span>
+
+
+
                         </div>
                     </div>
 
@@ -130,21 +161,23 @@ export default function Calendar() {
                     <div className="flex items-center justify-between">
 
                         <button
-                            type="submit" onClick={updateDates}
+                            type="submit" onClick={getAvailableRooms}
                             className="inline-block rounded-lg bg-green-500 px-5 py-3 text-sm font-medium text-white"
                         >
                             Search
                         </button>
                     </div>
 
-                    <div className="relative h-64 w-full sm:h-96 lg:h-full lg:w-1/2">
-                        <img
-                            alt=""
-                            src="https://images.pexels.com/photos/4352247/pexels-photo-4352247.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                            className="absolute inset-0 h-full w-full object-cover"
-                        />
-                    </div>
+
                 </form>
+
+                {/* todo: show a list of rooms */}
+                <ul>
+                    <li>{availableRooms.room_name}</li>
+                </ul>
+
+
+
             </div>
         </div>
     );
