@@ -13,6 +13,7 @@ export default function Calendar() {
     const [startDate, setStartDate] = useState();
     const [endDate, setEndDate] = useState();
     const [rooms, setRooms] = useState();
+    const [selectedRoom, setSelectedRoom] = useState();
 
 
     const onChangeStartDate = (e) => {
@@ -30,7 +31,6 @@ export default function Calendar() {
         setEndDate(dateValue);
     }
 
-    //todo: using useState for saving data
     function getAvailableRooms() {
 
         fetch(`http://localhost:5555/reservations?startDate=${startDate}&endDate=${endDate}`, {
@@ -51,9 +51,33 @@ export default function Calendar() {
 
     }
 
-    // get selected room's detail
-    function getRoomDetails(){
+    function getSelectedRoom(){
+        //get a value based on checkbox(input)
+        var grid = document.getElementById("Table");
+        var checkBoxes = grid.getElementsByTagName("input");
+        var selectedRoomName = "";
+        var row = "";
+
+        for (var i=0; i<checkBoxes.length; i++){
+            if(checkBoxes[i].checked){
+                row = checkBoxes[i].parentNode.parentNode.parentElement;
+                selectedRoomName = row.getElementsByTagName("td")[1].innerHTML;
+            }
+        }
+
+        setSelectedRoom(selectedRoomName);
         
+    }
+
+    //fetch 
+        // open new window with selected room details
+            // pass with start/end date, room information, user info
+    function getRoomDetails(){
+        getSelectedRoom();
+        
+
+
+
     }
 
 
@@ -156,7 +180,7 @@ export default function Calendar() {
 
                 </form>
 
-                <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+                <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm" id="Table">
                     <thead className="ltr:text-left rtl:text-right">
                         <tr>
                             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Photo</th>
@@ -172,17 +196,19 @@ export default function Calendar() {
                         {rooms?.map((room, index) => {
                             return <tr key={room._id}>
                                 <td className="whitespace-nowrap px-4 py-2 text-gray-700 object-scale-down"><img src={room.room_photo} ></img></td>
-                                <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">{room.room_name}</td>
+                                <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900" id="tdRoomId">{room.room_name}</td>
                                 <td className="whitespace-nowrap px-4 py-2 text-gray-700">{room.room_price}</td>
                                 <td className="whitespace-nowrap px-4 py-2 text-gray-700">{room.room_description}</td>
                                 <td><div className="align-content:space-between;">
-                                    <input id="default-checkbox" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                    <input id="checkbox" type="checkbox" onChange={(e) => onChangeStartDate(e.target.value)} value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                                 </div></td>
                             </tr>
                         })}
                     </tbody>
                 </table>
-
+                
+                {/* todo: room detail's table and Get Details button wouldn't be shown before clicking Search
+                            should i hide Calendar part after clicking Search button? */}
                 <div className="flex items-center justify-between">
 
                         <button
