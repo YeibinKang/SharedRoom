@@ -278,7 +278,7 @@ app.get("/reservations", async(req,res)=>{
 
     try {
         // Serach available rooms
-        const availableRooms = pool.query(`SELECT * FROM room WHERE room_id IN (SELECT room_id from reservation WHERE start_date >= TO_DATE('${startDateFromQuery}'::text, 'YYYY-MM-DD') OR end_date <= TO_DATE('${endDateFromQuery}'::text, 'YYYY-MM-DD'));`)
+        const availableRooms = pool.query(`SELECT * FROM room WHERE room_id IN (SELECT room_id from reservation WHERE start_date >= TO_DATE('${endDateFromQuery}'::text, 'YYYY-MM-DD') OR end_date <= TO_DATE('${startDateFromQuery}'::text, 'YYYY-MM-DD'));`)
         .then((rooms)=>{
             //res.status(200).json(rooms.rows);
             return res.status(200).json(rooms.rows);

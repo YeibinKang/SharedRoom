@@ -8,11 +8,11 @@
 
 import { useState } from "react";
 
-let availableRooms = [];
 
 export default function Calendar() {
     const [startDate, setStartDate] = useState();
     const [endDate, setEndDate] = useState();
+    const [rooms, setRooms] = useState();
 
 
     const onChangeStartDate = (e) => {
@@ -39,42 +39,27 @@ export default function Calendar() {
                 'Content-Type': 'application/json',
             }
         })
-            .then(res => res.json())
-            .then((data) => {
-                
-                console.log(data);
-
-                //todo: render rooms in screen
-                    //should do it globally...
-                const rooms = data.map((room) =>
-
-                    <li key={room.room_id}>
-                        <li>{room.room_name}</li>
-                        <li>{room.room_price}</li>
-                        <li>{room.room_description}</li>
-                    </li>
-                )
-                
-                return (
-                    <div>
-                        <ul>{rooms}</ul>
-                    </div>
-                    
-                );
-
+            .then((res) => {
+                return res.json().then((data) => {
+                    setRooms(data);
+                    return data;
+                }).catch((err) => {
+                    console.log(err);
+                })
             });
 
-            
 
-            
-            console.log(`this: ${availableRooms}`);
+    }
 
+    // get selected room's detail
+    function getRoomDetails(){
+        
     }
 
 
 
     return (
-        
+
         <div>
 
             {/*
@@ -83,7 +68,7 @@ export default function Calendar() {
   Plugins:
     - @tailwindcss/forms
 */}
-            
+
             <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-lg text-center">
                     <h1 className="text-2xl font-bold sm:text-3xl">When do you want to stay?</h1>
@@ -171,10 +156,42 @@ export default function Calendar() {
 
                 </form>
 
-                {/* todo: show a list of rooms */}
-                <ul>
-                    <li>{availableRooms.room_name}</li>
-                </ul>
+                <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+                    <thead className="ltr:text-left rtl:text-right">
+                        <tr>
+                            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Photo</th>
+                            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Name</th>
+                            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Price</th>
+                            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Description</th>
+                            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Select</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+
+                        {/* todo: input should be center in td */}
+                        {rooms?.map((room, index) => {
+                            return <tr key={room._id}>
+                                <td className="whitespace-nowrap px-4 py-2 text-gray-700 object-scale-down"><img src={room.room_photo} ></img></td>
+                                <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">{room.room_name}</td>
+                                <td className="whitespace-nowrap px-4 py-2 text-gray-700">{room.room_price}</td>
+                                <td className="whitespace-nowrap px-4 py-2 text-gray-700">{room.room_description}</td>
+                                <td><div className="align-content:space-between;">
+                                    <input id="default-checkbox" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                </div></td>
+                            </tr>
+                        })}
+                    </tbody>
+                </table>
+
+                <div className="flex items-center justify-between">
+
+                        <button
+                            type="submit" onClick={getRoomDetails}
+                            className="inline-block rounded-lg bg-green-500 px-5 py-3 text-sm font-medium text-white"
+                        >
+                            Get Details
+                        </button>
+                    </div>
 
 
 
