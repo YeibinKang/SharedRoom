@@ -7,6 +7,7 @@
 // api call GET 할 때 날짜에 '' 안 붙인 것
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Calendar() {
@@ -14,6 +15,9 @@ export default function Calendar() {
     const [endDate, setEndDate] = useState();
     const [rooms, setRooms] = useState();
     const [selectedRoom, setSelectedRoom] = useState();
+    const [selectedRoomId, setSelectedRoomId] = useState();
+
+    const navigate = useNavigate();
 
 
     const onChangeStartDate = (e) => {
@@ -51,7 +55,7 @@ export default function Calendar() {
 
     }
 
-    function getSelectedRoom(){
+    function getSelectedRoomName(){
         //get a value based on checkbox(input)
         var grid = document.getElementById("Table");
         var checkBoxes = grid.getElementsByTagName("input");
@@ -61,11 +65,13 @@ export default function Calendar() {
         for (var i=0; i<checkBoxes.length; i++){
             if(checkBoxes[i].checked){
                 row = checkBoxes[i].parentNode.parentNode.parentElement;
+                console.log(row);
                 selectedRoomName = row.getElementsByTagName("td")[1].innerHTML;
+                //console.log(selectedRoomName);
             }
         }
 
-        setSelectedRoom(selectedRoomName);
+        return selectedRoomName;
         
     }
 
@@ -73,13 +79,54 @@ export default function Calendar() {
         // open new window with selected room details
             // pass with start/end date, room information, user info
     function getRoomDetails(){
-        getSelectedRoom();
-        
+        const roomName = getSelectedRoomName();
 
+        //find a room information with roomName (fetch)
+        fetch(`http://localhost:5555/room?roomName=${roomName}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then((res) => {
+                return res.json().then((data) => {
+                    setSelectedRoom(data);
+                    //console.log(data);
 
+                    // setSelectedRoomId(data[0].room_id);
+                    // console.log(`hey! ${data[0].room_name}`);
+                    // setRoomName(data[0].room_name);
 
+                    //navigate('/RoomDetailPage', {state:{room_name:selectedRoom[0].room_name, room_price:selectedRoom[0].room_price}});
+
+                    //todo: why informations is not saved in useState??
+
+                }).catch((err) => {
+                    console.log(err.message);
+                })
+            });
+            
+            //selectedRoom has selected room's information
+
+            //console.log(`selected room: ${selectedRoom[0].room_name}`);
+            // navigate to detail page with room id
+            
+            setInformation();
     }
 
+
+    //set information and send it to the room detail's page
+    function setInformation(){
+        const room_name = selectedRoom[0].room_name;
+        const room_price = selectedRoom[0].room_price;
+        const room_description = selectedRoom[0].room_description;
+        const room_photo = selectedRoom[0].room_photo;
+        const room_id = selectedRoom[0].room_id;
+        
+        navigate('/RoomDetailPage', {state:{room_name:room_name, room_price: room_price, room_description:room_description, room_photo:room_photo, room_id:room_id}});
+    }
+
+    
 
 
     return (
@@ -108,7 +155,7 @@ export default function Calendar() {
                         <label htmlFor="date" className="sr-only">Start Date</label>
 
                         <div className="relative">
-                            <lable>Select your start date</lable>
+                            <label>Select your start date</label>
                             <input
                                 type="date" onChange={(e) => onChangeStartDate(e.target.value)}
                                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
@@ -138,7 +185,7 @@ export default function Calendar() {
                         <label htmlFor="date" className="sr-only">End Date</label>
 
                         <div className="relative">
-                            <lable>Select your end date</lable>
+                            <label>Select your end date</label>
                             <input
                                 type="date" onChange={(e) => onChangeEndDate(e.target.value)}
                                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"

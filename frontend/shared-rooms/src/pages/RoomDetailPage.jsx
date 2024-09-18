@@ -1,93 +1,65 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from 'react-router-dom';
+
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 
-import axios from "axios";
-
-let currentRoom = [];
+import { useLocation } from "react-router-dom";
 
 export default function RoomDetailPage() {
 
-    let [rooms, setRooms] = useState([]);
-    const [loading, setLoading] = useState([]);
+    const location = useLocation();
+    const roomName = location.state.room_name;
+    const roomPrice = location.state.room_price;
+    const roomDescription = location.state.room_description;
+    const roomPhoto = location.state.room_photo;
+    const roomId = location.state.room_id;
+    //const {roomName, roomPrice} = state;
 
-
-    const roomId = useParams();
-
-
-
-    useEffect(() => {
-        setLoading(true);
-        axios
-            .get('http://localhost:5555/')
-            .then((res, req) => {
-
-                rooms = res.data;
-
-                for (let i = 0; i < rooms.length; i++) {
-                    if (rooms[i]._id === roomId._id) {
-
-                        currentRoom = rooms[i];
-                    }
-                }
-
-                setLoading(false);
-            })
-            .catch((err) => {
-                res.status(500).json({ error: 'Internal server error' });
-                console.log(`Error occured when loading the page: ${err.message}`);
-                setLoading(false);
-            });
-    }, []);
 
     return (
-        //id -> room
-
         <div>
-        <Navbar></Navbar>
-        <div className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-            <dl className="-my-3 divide-y divide-gray-100 text-sm">
+            <Navbar></Navbar>
 
-                <div className="grid grid-cols-1 gap-1 py-3 sm:gap-4">
-                    <dd className="text-gray-700 sm:col-span-2"><img src={currentRoom.photo}></img></dd>
+            <div className="bg-gray-100">
+                <div className="container mx-auto px-4 py-8">
+                    <div className="flex flex-wrap -mx-4">
+                        <div className="w-full md:w-1/2 px-4 mb-8">
+                            <img src={roomPhoto} alt="room image"
+                                className="w-full h-auto rounded-lg shadow-md mb-4" id="mainImage" />
+                        </div>
+
+
+                        <div className="w-full md:w-1/2 px-4">
+                            <h2 className="text-3xl font-bold mb-2">{roomName}</h2>
+                            <div className="mb-4">
+                                <span className="text-2xl font-bold mr-2">${roomPrice}</span>
+                            </div>
+                            
+                            <p className="text-gray-700 mb-6">{roomDescription}</p>
+
+                            <div className="mb-6">
+                                <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">Quantity:</label>
+                                <input type="number" id="quantity" name="quantity" min="1" value="1" className="w-12 text-center rounded-md border-gray-300  shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-semibold mb-2">Key Features:</h3>
+                                <ul className="list-disc list-inside text-gray-700">
+                                    <li>Industry-leading noise cancellation</li>
+                                    <li>30-hour battery life</li>
+                                    <li>Touch sensor controls</li>
+                                    <li>Speak-to-chat technology</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">
-                    <dt className="font-medium text-gray-900">Name</dt>
-                    <dd className="text-gray-700 sm:col-span-2">{currentRoom.name}</dd>
-                </div>
+            </div>
 
-                <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">
-                    <dt className="font-medium text-gray-900">Price</dt>
-                    <dd className="text-gray-700 sm:col-span-2">{currentRoom.price}</dd>
-                </div>
 
-                <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">
-                    <dt className="font-medium text-gray-900">Details</dt>
-                    <dd className="text-gray-700 sm:col-span-2">{currentRoom.details}</dd>
-                </div>
 
-                <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">
-                    <dt className="font-medium text-gray-900">Start Date</dt>
-                    <dd className="text-gray-700 sm:col-span-2"><input type="date"></input></dd>
 
-                </div><div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">
-                    <dt className="font-medium text-gray-900">End Date</dt>
-                    <dd className="text-gray-700 sm:col-span-2"><input type="date"></input></dd>
-
-                </div>
-
-    
-                <div className="flex flex-col items-center justify-center">
-                    <button type="button" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Green</button>
-                </div>
-                
-     
-
-            </dl>
-        </div>
-        <Footer></Footer>
+            <Footer></Footer>
         </div>
     )
 

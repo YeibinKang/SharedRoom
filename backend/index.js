@@ -49,6 +49,27 @@ app.get("/rooms", async(req, res) => {
     }
 });
 
+app.get("/room", async(req, res) => {
+    const roomName = req.query.roomName;
+    console.log(`current room name ??: ${roomName}`);
+    let currentRoom;
+    try {
+        const curentRoom = pool.query(`SELECT * FROM room WHERE room_name = '${roomName}'`)
+        .then((room)=>{
+            //console.log(room.rows[0].room_id);
+            currentRoom = room;
+            //console.log(currentRoom);
+            //console.log(room);
+            //console.log(`room's information ${currentRoom.rows[0].room_id}`);
+            return res.status(200).json(room.rows);
+        });
+        
+    } catch (error) {
+        console.log(`Error occured while getting a room information: ${error.message}`);
+        return res.status(500);
+    }
+})
+
 // get a room
 app.get("/room/:id", async(req,res)=>{
     try {
