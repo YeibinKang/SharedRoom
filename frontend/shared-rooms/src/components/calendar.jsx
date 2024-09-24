@@ -11,14 +11,23 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function Calendar() {
-    const [startDate, setStartDate] = useState();
-    const [endDate, setEndDate] = useState();
+
+    console.log(getCurrentDate());
+    const [startDate, setStartDate] = useState(getCurrentDate());
+    const [endDate, setEndDate] = useState(getCurrentDate());
     const [rooms, setRooms] = useState();
     const [selectedRoom, setSelectedRoom] = useState();
     const [selectedRoomId, setSelectedRoomId] = useState();
 
     const navigate = useNavigate();
 
+    function getCurrentDate(){
+        let yourDate = new Date()
+        yourDate.toISOString().split('T')[0]
+        const offset = yourDate.getTimezoneOffset();
+        yourDate = new Date(yourDate.getTime() - (offset * 60 * 1000));
+        return yourDate.toISOString().split('T')[0]
+    }
 
     const onChangeStartDate = (e) => {
         const dateValue = e;
@@ -34,7 +43,7 @@ export default function Calendar() {
 
 
     //todo: 
-        //1. rooms are not showing at first search (i need to select dates twice)
+    //1. rooms are not showing at first search (i need to select dates twice)
     function getAvailableRooms() {
 
         fetch(`http://localhost:5555/reservations?startDate=${startDate}&endDate=${endDate}`, {
@@ -55,33 +64,12 @@ export default function Calendar() {
 
     }
 
-    function getSelectedRoomName(){
-        //get a value based on checkbox(input)
-        var grid = document.getElementById("Table");
-        var checkBoxes = grid.getElementsByTagName("input");
-        var selectedRoomName = "";
-        var row = "";
-
-        for (var i=0; i<checkBoxes.length; i++){
-            if(checkBoxes[i].checked){
-                row = checkBoxes[i].parentNode.parentNode.parentElement;
-                console.log(row);
-                selectedRoomName = row.getElementsByTagName("td")[1].innerHTML;
-            }
-        }
-
-        return selectedRoomName;
-        
-    }
-
-
-    //todo: the information is not searched at once. (i need to click the button twice)
-    //fetch 
-        // open new window with selected room details
-            // pass with start/end date, room information, user info
-    function getRoomDetails(){
-        const roomName = getSelectedRoomName();
-
+    // open new window with selected room details
+    // pass with start/end date, room information, user info
+    function getRoomDetails() {
+ 
+        const roomName = selectedRoom.room_name;
+        console.log(roomName);
         //find a room information with roomName (fetch)
         fetch(`http://localhost:5555/room?roomName=${roomName}`, {
             method: 'GET',
@@ -97,13 +85,13 @@ export default function Calendar() {
                     console.log(err.message);
                 })
             });
-            
-            setInformation();
+
+        setInformation();
     }
 
 
     //set information and send it to the room detail's page
-    function setInformation(){
+    function setInformation() {
         const room_name = selectedRoom[0].room_name;
         const room_price = selectedRoom[0].room_price;
         const room_description = selectedRoom[0].room_description;
@@ -111,11 +99,11 @@ export default function Calendar() {
         const room_id = selectedRoom[0].room_id;
         const start_date = startDate;
         const end_date = endDate;
-        
-        navigate('/RoomDetailPage', {state:{room_name:room_name, room_price: room_price, room_description:room_description, room_photo:room_photo, room_id:room_id, start_date: start_date, end_date: end_date}});
+
+        navigate('/RoomDetailPage', { state: { room_name: room_name, room_price: room_price, room_description: room_description, room_photo: room_photo, room_id: room_id, start_date: start_date, end_date: end_date } });
     }
 
-    
+
 
 
     return (
@@ -147,7 +135,7 @@ export default function Calendar() {
                             <label>Select your start date</label>
                             <input
                                 type="date" onChange={(e) => onChangeStartDate(e.target.value)}
-                                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm" value={startDate}
                             />
 
                             <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
@@ -177,7 +165,7 @@ export default function Calendar() {
                             <label>Select your end date</label>
                             <input
                                 type="date" onChange={(e) => onChangeEndDate(e.target.value)}
-                                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm" value={endDate}
                             />
 
                             <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
@@ -234,24 +222,25 @@ export default function Calendar() {
                                 <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900" id="tdRoomId">{room.room_name}</td>
                                 <td className="whitespace-nowrap px-4 py-2 text-gray-700">{room.room_price}</td>
                                 <td><div className="align-content:space-between;">
-                                    <input id="checkbox" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                    <input id="checkbox" type="checkbox" onChange={()=>setSelectedRoom(room.room_name)} checked={selectedRoom === room.room_name}  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                                 </div></td>
                             </tr>
                         })}
                     </tbody>
                 </table>
                 
+
                 {/* todo: room detail's table and Get Details button wouldn't be shown before clicking Search
                             should i hide Calendar part after clicking Search button? */}
                 <div className="flex items-center justify-between">
 
-                        <button
-                            type="submit" onClick={getRoomDetails}
-                            className="inline-block rounded-lg bg-green-500 px-5 py-3 text-sm font-medium text-white"
-                        >
-                            Get Details
-                        </button>
-                    </div>
+                    <button
+                        type="submit" onClick={getRoomDetails}
+                        className="inline-block rounded-lg bg-green-500 px-5 py-3 text-sm font-medium text-white"
+                    >
+                        Get Details
+                    </button>
+                </div>
 
 
 
