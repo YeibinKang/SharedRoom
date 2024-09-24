@@ -21,12 +21,9 @@ export default function Calendar() {
 
 
     const onChangeStartDate = (e) => {
-
         const dateValue = e;
-        console.log("selected date: ", dateValue);
+        console.log("selected start date: ", dateValue);
         setStartDate(dateValue);
-        console.log("date value's data type: ", typeof (dateValue));
-
     }
 
     const onChangeEndDate = (e) => {
@@ -35,6 +32,9 @@ export default function Calendar() {
         setEndDate(dateValue);
     }
 
+
+    //todo: 
+        //1. rooms are not showing at first search (i need to select dates twice)
     function getAvailableRooms() {
 
         fetch(`http://localhost:5555/reservations?startDate=${startDate}&endDate=${endDate}`, {
@@ -67,7 +67,6 @@ export default function Calendar() {
                 row = checkBoxes[i].parentNode.parentNode.parentElement;
                 console.log(row);
                 selectedRoomName = row.getElementsByTagName("td")[1].innerHTML;
-                //console.log(selectedRoomName);
             }
         }
 
@@ -75,6 +74,8 @@ export default function Calendar() {
         
     }
 
+
+    //todo: the information is not searched at once. (i need to click the button twice)
     //fetch 
         // open new window with selected room details
             // pass with start/end date, room information, user info
@@ -91,25 +92,11 @@ export default function Calendar() {
             .then((res) => {
                 return res.json().then((data) => {
                     setSelectedRoom(data);
-                    //console.log(data);
-
-                    // setSelectedRoomId(data[0].room_id);
-                    // console.log(`hey! ${data[0].room_name}`);
-                    // setRoomName(data[0].room_name);
-
-                    //navigate('/RoomDetailPage', {state:{room_name:selectedRoom[0].room_name, room_price:selectedRoom[0].room_price}});
-
-                    //todo: why informations is not saved in useState??
 
                 }).catch((err) => {
                     console.log(err.message);
                 })
             });
-            
-            //selectedRoom has selected room's information
-
-            //console.log(`selected room: ${selectedRoom[0].room_name}`);
-            // navigate to detail page with room id
             
             setInformation();
     }
@@ -122,8 +109,10 @@ export default function Calendar() {
         const room_description = selectedRoom[0].room_description;
         const room_photo = selectedRoom[0].room_photo;
         const room_id = selectedRoom[0].room_id;
+        const start_date = startDate;
+        const end_date = endDate;
         
-        navigate('/RoomDetailPage', {state:{room_name:room_name, room_price: room_price, room_description:room_description, room_photo:room_photo, room_id:room_id}});
+        navigate('/RoomDetailPage', {state:{room_name:room_name, room_price: room_price, room_description:room_description, room_photo:room_photo, room_id:room_id, start_date: start_date, end_date: end_date}});
     }
 
     
@@ -233,7 +222,6 @@ export default function Calendar() {
                             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Photo</th>
                             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Name</th>
                             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Price</th>
-                            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Description</th>
                             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Select</th>
                         </tr>
                     </thead>
@@ -245,9 +233,8 @@ export default function Calendar() {
                                 <td className="whitespace-nowrap px-4 py-2 text-gray-700 object-scale-down"><img src={room.room_photo} ></img></td>
                                 <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900" id="tdRoomId">{room.room_name}</td>
                                 <td className="whitespace-nowrap px-4 py-2 text-gray-700">{room.room_price}</td>
-                                <td className="whitespace-nowrap px-4 py-2 text-gray-700">{room.room_description}</td>
                                 <td><div className="align-content:space-between;">
-                                    <input id="checkbox" type="checkbox" onChange={(e) => onChangeStartDate(e.target.value)} value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                    <input id="checkbox" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                                 </div></td>
                             </tr>
                         })}

@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import cors from 'cors';
 import pool from "./db.cjs";
 import cookieParser from "cookie-parser";
+import { start } from "repl";
 
 var app = express();
 app.use(cors());
@@ -51,7 +52,6 @@ app.get("/rooms", async(req, res) => {
 
 app.get("/room", async(req, res) => {
     const roomName = req.query.roomName;
-    console.log(`current room name ??: ${roomName}`);
     let currentRoom;
     try {
         const curentRoom = pool.query(`SELECT * FROM room WHERE room_name = '${roomName}'`)
@@ -208,16 +208,23 @@ app.delete('/user/:id', async(req, res)=>{
 
 
 // create a reservation
+    //id = room id
 app.post("/reservation/:id", async(req, res)=>{
     try{
 
-        const currentRoomId = req.params.id; //todo: user should click the room and room's id will be in parameter
-        const start_date = req.body.start_date;
-        const end_date = req.body.end_date;
+        const currentRoomId = req.body.room_id.roomId; //todo: user should click the room and room's id will be in parameter
+        const start_date = req.body.start_date.startDate;
+        const end_date = req.body.end_date.endDate;
         const stay_days = calculateDays(start_date, end_date);
         const user_id = 1; //todo: need to get a id from cookie?
         let total_price = 0;
-        const newReservation = pool.query("INSERT INTO reservation (start_date, end_date, roomd_id, user_id) VALUES($1 $2 $3 $4)",[start_date, end_date, currentRoomId, user_id])
+
+        //console.log(start_date.);
+        console.log(typeof(start_date));
+        console.log(req.body);
+        console.log(`Start, end, room id: ${start_date}. ${end_date}, ${currentRoomId}`);
+
+        const newReservation = pool.query(`INSERT INTO reservation (start_date, end_date, room_id, user_id) VALUES(TO_DATE('${start_date}'::text, 'YYYY-MM-DD'), TO_DATE('${end_date}'::text, 'YYYY-MM-DD'), ${currentRoomId}, 1)`)
 
         let price_per_night = pool.query("SELECT (room_price) FROM room WHERE room_id = $1", [currentRoomId])
         .then((room)=>{
@@ -247,6 +254,7 @@ app.post("/reservation/:id", async(req, res)=>{
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 // calculate stay days
 function calculateDays(startDate, endDate){
@@ -299,7 +307,7 @@ app.get("/reservations", async(req,res)=>{
 
     try {
         // Serach available rooms
-        const availableRooms = pool.query(`SELECT * FROM room WHERE room_id IN (SELECT room_id from reservation WHERE start_date >= TO_DATE('${endDateFromQuery}'::text, 'YYYY-MM-DD') OR end_date <= TO_DATE('${startDateFromQuery}'::text, 'YYYY-MM-DD'));`)
+        const availableRooms = pool.query(`SELECT * FROM room WHERE room_id NOT IN (SELECT room_id from reservation WHERE start_date >= TO_DATE('${endDateFromQuery}'::text, 'YYYY-MM-DD') AND end_date <= TO_DATE('${startDateFromQuery}'::text, 'YYYY-MM-DD'));`)
         .then((rooms)=>{
             //res.status(200).json(rooms.rows);
             return res.status(200).json(rooms.rows);

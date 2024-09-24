@@ -1,6 +1,7 @@
 
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import { useNavigate } from "react-router-dom";
 
 import { useLocation } from "react-router-dom";
 
@@ -12,7 +13,58 @@ export default function RoomDetailPage() {
     const roomDescription = location.state.room_description;
     const roomPhoto = location.state.room_photo;
     const roomId = location.state.room_id;
+    const startDate = location.state.start_date;
+    const endDate = location.state.end_date;
+    const stayDays = calculateDays(startDate, endDate);
     //const {roomName, roomPrice} = state;
+    const navigate = useNavigate();
+
+    function calculateDays(startDate, endDate){
+        let start_date = new Date(startDate);
+        let end_date = new Date(endDate);
+    
+        let difference_in_time = end_date.getTime() - start_date.getTime();
+        let difference_in_days = Math.round(difference_in_time/(1000*3600*24));
+    
+        return difference_in_days;
+    }
+
+    function getTotalPrice(){
+        let days = calculateDays(startDate, endDate);
+        let totalprice = roomPrice * days;
+        return totalprice;
+
+    }
+
+    //make a reservation
+    function bookRoom(){
+        //room id 
+        //fetch
+        fetch(`http://localhost:5555/reservation/${roomId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                start_date: {startDate},
+                end_date: {endDate},
+                room_id: {roomId},
+                user_id: 1
+            })
+        })
+            .then((res) => {
+                return res.json().then((data) => {
+                    //console.log(data);
+                    alert("Booking is done!");
+                    navigate('/');
+
+                }).catch((err) => {
+                    console.log(err.message);
+                })
+            });
+  
+    }
+
 
 
     return (
@@ -29,30 +81,37 @@ export default function RoomDetailPage() {
 
 
                         <div className="w-full md:w-1/2 px-4">
+                        <h2 className="text-3xl font-bold mb-2">Stay from {startDate} to {endDate}</h2>
                             <h2 className="text-3xl font-bold mb-2">{roomName}</h2>
                             <div className="mb-4">
-                                <span className="text-2xl font-bold mr-2">${roomPrice}</span>
+                                <span className="text-2xl font-bold mr-2">$ {getTotalPrice()}</span>
+                            </div>
+                            <div className="mb-3">
+                                <span className="text-1xl font-bold mr-2">$ {roomPrice} *  {stayDays}days</span>
                             </div>
                             
-                            <p className="text-gray-700 mb-6">{roomDescription}</p>
-
-                            <div className="mb-6">
-                                <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">Quantity:</label>
-                                <input type="number" id="quantity" name="quantity" min="1" value="1" className="w-12 text-center rounded-md border-gray-300  shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
-                            </div>
+                        
 
                             <div>
-                                <h3 className="text-lg font-semibold mb-2">Key Features:</h3>
+                                <h3 className="text-lg font-semibold mb-2">Room Details:</h3>
                                 <ul className="list-disc list-inside text-gray-700">
-                                    <li>Industry-leading noise cancellation</li>
-                                    <li>30-hour battery life</li>
-                                    <li>Touch sensor controls</li>
-                                    <li>Speak-to-chat technology</li>
+                                    <li>{roomDescription}</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
+
+                    <div className="flex items-center justify-between">
+
+                        <button
+                            type="submit" onClick={bookRoom}
+                            className="inline-block rounded-lg bg-green-500 px-5 py-3 text-sm font-medium text-white">
+                            Book!
+                        </button>
+                    </div>
                 </div>
+
+                
 
             </div>
 
