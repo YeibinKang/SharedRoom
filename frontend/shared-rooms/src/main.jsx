@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AboutPage from "./pages/AboutPage";
 import RoomDetailPage from "./pages/RoomDetailPage";
+import MyPage from "./pages/MyPage";
 
 
 const router = createBrowserRouter([
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
   {
     path:"/RoomDetailPage",
     element:<RoomDetailPage></RoomDetailPage>
+  },
+  {
+    path:"/MyPage",
+    element:<MyPage></MyPage>
   }
 ]);
 

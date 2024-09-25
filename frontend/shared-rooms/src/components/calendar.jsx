@@ -17,7 +17,6 @@ export default function Calendar() {
     const [endDate, setEndDate] = useState(getCurrentDate());
     const [rooms, setRooms] = useState();
     const [selectedRoom, setSelectedRoom] = useState();
-    const [selectedRoomId, setSelectedRoomId] = useState();
 
     const navigate = useNavigate();
 
@@ -68,8 +67,7 @@ export default function Calendar() {
     // pass with start/end date, room information, user info
     function getRoomDetails() {
  
-        const roomName = selectedRoom.room_name;
-        console.log(roomName);
+        const roomName = selectedRoom;
         //find a room information with roomName (fetch)
         fetch(`http://localhost:5555/room?roomName=${roomName}`, {
             method: 'GET',
@@ -79,30 +77,16 @@ export default function Calendar() {
         })
             .then((res) => {
                 return res.json().then((data) => {
-                    setSelectedRoom(data);
+                    setSelectedRoom(data[0]);
+                    navigate('/RoomDetailPage', { state: { room_name: data[0].room_name, room_price: data[0].room_price, room_description: data[0].room_description, room_photo: data[0].room_photo, room_id: data[0].room_id, start_date: startDate, end_date: endDate } });
 
                 }).catch((err) => {
                     console.log(err.message);
                 })
             });
 
-        setInformation();
+        
     }
-
-
-    //set information and send it to the room detail's page
-    function setInformation() {
-        const room_name = selectedRoom[0].room_name;
-        const room_price = selectedRoom[0].room_price;
-        const room_description = selectedRoom[0].room_description;
-        const room_photo = selectedRoom[0].room_photo;
-        const room_id = selectedRoom[0].room_id;
-        const start_date = startDate;
-        const end_date = endDate;
-
-        navigate('/RoomDetailPage', { state: { room_name: room_name, room_price: room_price, room_description: room_description, room_photo: room_photo, room_id: room_id, start_date: start_date, end_date: end_date } });
-    }
-
 
 
 

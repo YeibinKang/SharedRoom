@@ -1,4 +1,64 @@
+import { useState } from "react";
+
+
+
 export default function Register() {
+    
+    //todo: need to create functions to handle creating user
+        // when click Sign up button
+
+    const [userName, setUserName] = useState("");
+    const [userPassword, setUserPassword] = useState("");
+    const [userPhone, setUserPhone] = useState("");
+    const [userEmail, setUserEmail] = useState("");
+
+    const handleUserName = (e)=>{
+        setUserName(e.target.value);
+    }
+
+    const handleUserPassword = (e) => {
+        setUserPassword(e.target.value);
+    }
+    
+    const handleUserPhone = (e) =>{
+        setUserPhone(e.target.value);
+    }
+
+    const handleUserEmail = (e) => {
+        setUserEmail(e.target.value);
+    }
+
+    function handleCreateUser(){
+       
+        console.log(userEmail, userName, userPassword, userPhone);
+
+        fetch(`http://localhost:5555/user`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_name:userName,
+                user_password:userPassword,
+                user_phone:userPhone,
+                user_email:userEmail,
+            })
+        })
+            .then((res) => {
+                return res.json().then((data) => {
+                    console.log(data);
+                    
+                }).catch((err) => {
+                    console.log(err.message);
+                })
+            });
+               
+
+
+    }
+
+
+    
     return (
         <div>
             {/*
@@ -24,7 +84,7 @@ export default function Register() {
 
                         <div className="relative">
                             <input
-                                type="name"
+                                type="name" name="user_name" onChange={handleUserName}
                                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                                 placeholder="Enter user name"
                             />
@@ -36,9 +96,21 @@ export default function Register() {
 
                         <div className="relative">
                             <input
-                                type="password"
+                                type="password" name="user_password" onChange={handleUserPassword}
                                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                                 placeholder="Enter password"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label htmlFor="email" className="sr-only">User Email</label>
+
+                        <div className="relative">
+                            <input
+                                type="email" name="user_email" onChange={handleUserEmail}
+                                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                                placeholder="Enter user email"
                             />
                         </div>
                     </div>
@@ -48,7 +120,7 @@ export default function Register() {
 
                         <div className="relative">
                             <input
-                                type="tel"
+                                type="tel" name="user_phone" onChange={handleUserPhone}
                                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                                 placeholder="Enter your phone number"
                             />
@@ -61,7 +133,7 @@ export default function Register() {
 
                     <div className="flex items-center justify-between">
                         <button
-                            type="submit"
+                            type="submit" onSubmit={handleCreateUser}
                             className="inline-block rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white"
                         >
                             Sign up

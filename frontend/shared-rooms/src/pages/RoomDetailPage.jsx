@@ -36,6 +36,10 @@ export default function RoomDetailPage() {
 
     }
 
+    // todo: before booking, user should be logged
+        // should check if the user is logged in
+
+        
     //make a reservation
     function bookRoom(){
         //room id 

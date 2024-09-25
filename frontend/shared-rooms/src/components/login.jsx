@@ -3,9 +3,10 @@
 export default function login() {
     
   
-
+  //todo: check the user's pw and id are matched.
+    // move to home page (user's logged in situation should be maintained)
   function signIn(){
-
+      
   }
   
   {/*
@@ -103,7 +104,7 @@ export default function login() {
     <div className="flex items-center justify-between">
       <p className="text-sm text-gray-500">
         No account?
-        <a className="underline" href="#">Sign up</a>
+        <a className="underline" href="/RegisterPage">Sign up</a>
       </p>
 
       <button
