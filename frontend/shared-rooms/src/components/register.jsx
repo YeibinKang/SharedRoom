@@ -12,6 +12,8 @@ export default function Register() {
     const [userPhone, setUserPhone] = useState("");
     const [userEmail, setUserEmail] = useState("");
 
+    console.log(typeof(userEmail));
+
     const handleUserName = (e)=>{
         setUserName(e.target.value);
     }
@@ -26,9 +28,14 @@ export default function Register() {
 
     const handleUserEmail = (e) => {
         setUserEmail(e.target.value);
+        console.log(userEmail);
     }
 
-    function handleCreateUser(){
+    //todo: why breaker is not passing to this
+    function handleCreateUser(e){
+
+        e.preventDefault();
+        e.stopPropagation();
        
         console.log(userEmail, userName, userPassword, userPhone);
 
@@ -78,7 +85,7 @@ export default function Register() {
                     </p>
                 </div>
 
-                <form action="#" className="mx-auto mb-0 mt-8 max-w-md space-y-4">
+                <form action="#" className="mx-auto mb-0 mt-8 max-w-md space-y-4" onSubmit={handleCreateUser}>
                     <div>
                         <label htmlFor="name" className="sr-only">User Name</label>
 
@@ -133,7 +140,7 @@ export default function Register() {
 
                     <div className="flex items-center justify-between">
                         <button
-                            type="submit" onSubmit={handleCreateUser}
+                            type="submit" 
                             className="inline-block rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white"
                         >
                             Sign up

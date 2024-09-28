@@ -121,7 +121,7 @@ app.post("/user", async(req, res)=>{
         const user_password = req.body.user_password;
         const user_email = req.body.user_email;
         const user_phone = req.body.user_phone;
-        const user_id = req.body.user_id;
+        const user_id = req.body.user_id; //todo: delete 
 
         const isNameExist = await pool.query("SELECT * FROM app_user WHERE user_id = $1", [user_id])
         .then((user) => {
@@ -130,8 +130,7 @@ app.post("/user", async(req, res)=>{
                     console.error(`Error occured while creating User: user_name is already exist: ${error.message}`);
                 }else{
                     const newUser = pool.query("INSERT INTO app_user (user_name, user_password, user_email, user_phone) VALUES($1, crypt($2, gen_salt('md5')), $3, $4)", [user_name, user_password, user_email, user_phone]);
-
-                    res.status(200).json(newUser);
+                    res.cookie("test", "1").status(200).json(newUser);
         
                 }
  

@@ -43,7 +43,9 @@ export default function Calendar() {
 
     //todo: 
     //1. rooms are not showing at first search (i need to select dates twice)
-    function getAvailableRooms() {
+    function getAvailableRooms(e) {
+        e.preventDefault();
+        
 
         fetch(`http://localhost:5555/reservations?startDate=${startDate}&endDate=${endDate}`, {
             method: 'GET',
