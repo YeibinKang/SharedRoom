@@ -1,25 +1,26 @@
 import express from "express";
 import { PORT } from "./config.js";
-import { createRequire } from 'module';
-import { error } from "console";
+
 import dotenv from "dotenv";
 import cors from 'cors';
 import pool from "./db.cjs";
 import cookieParser from "cookie-parser";
-import { start } from "repl";
+import ViteExpress from "vite-express";
+import jwt from "express-jwt";
+import jsonwebtoken from "jsonwebtoken";
 
+
+dotenv.config();
+
+const sercretKey = process.env.JWT_SECRET;
 var app = express();
 app.use(cors());
 
 app.use(express.json());
-app.use(cookieParser());
-dotenv.config();
-
-const require = createRequire(import.meta.url);
-const sercretKey = process.env.JWT_SECRET;
+app.use(cookieParser(sercretKey));
 
 
-// create a room
+// Create a room with data
 app.post("/room", async(req, res)=>{
     try{
         const room_name = req.body.room_name;
@@ -33,49 +34,33 @@ app.post("/room", async(req, res)=>{
 
     }catch(err){
         console.error(`Error occured while creating a room: ${err.message}`);
-        return res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// get all rooms
-app.get("/rooms", async(req, res) => {
-    try {   
 
-        const allRooms = await pool.query("SELECT * FROM room");
-        res.status(200).json(allRooms.rows);
-
-    } catch (error) {
-        console.error(`Error occured while getting all rooms: ${error.message}`)
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
+// Get a room with provided room name
 app.get("/room", async(req, res) => {
     const roomName = req.query.roomName;
     let currentRoom;
-    try {
-        const curentRoom = pool.query(`SELECT * FROM room WHERE room_name = '${roomName}'`)
-        .then((room)=>{
-            //console.log(room.rows[0].room_id);
-            currentRoom = room;
-            //console.log(currentRoom);
-            //console.log(room);
-            //console.log(`room's information ${currentRoom.rows[0].room_id}`);
-            return res.status(200).json(room.rows);
-        });
-        
-    } catch (error) {
-        console.log(`Error occured while getting a room information: ${error.message}`);
+
+    try{
+        currentRoom = await pool.query("SELECT * FROM room WHERE room_name = $1",[roomName]);
+    }catch(e){
+        console.log(`Error occured while getting a room information: ${e.message}`);
         return res.status(500);
     }
+
+    return res.status(200).json(currentRoom);
+    
 })
 
-// get a room
+// Get a room with room id
 app.get("/room/:id", async(req,res)=>{
     try {
         const currentRoomID = req.params.id;
         const currentRoom = await pool.query("SELECT * FROM room WHERE room_id = $1", [currentRoomID]);
-        res.status(200).json(currentRoom.rows);
+        return res.status(200).json(currentRoom.rows);
 
     } catch (error) {
         console.error(`Error occured while getting a room: ${error.message}`);
@@ -83,7 +68,7 @@ app.get("/room/:id", async(req,res)=>{
     }
 });
 
-// update a room information
+// Update a room information with provided information
 app.put("/room/:id", async(req, res) => {
     try {
         const currentRoomID = req.params.id;
@@ -97,54 +82,65 @@ app.put("/room/:id", async(req, res) => {
     }
 });
 
-// delete a room
+// Delete a room with room id
 app.delete("/room/:id", async(req, res) => {
+    let deleteRoom;
     try {
         const currentRoomID = req.params.id;
-    
-        const deleteRoom = await pool.query("DELETE FROM room WHERE room_id = $1", [currentRoomID]);
-        res.status(200).json(deleteRoom.rows);
-        
+        deleteRoom = await pool.query("DELETE FROM room WHERE room_id = $1", [currentRoomID]);
     } catch (error) {
         console.error(`Error occured while deleting a room: ${error.message}`);
-        return res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error' });
     }
+    return res.status(200);
 });
 
-// create a user
+// Create a user
     //user_name shouldn't be duplicated
     //user_password should be hashed
+    //todo: after creating a user, the user should be logged in automatically.
 app.post("/user", async(req, res)=>{
 
+    let isNameExist;
+    let isAddSuccess;
+    let currentUserId;
+
     try{
+
+        //get a user information 
         const user_name = req.body.user_name;
         const user_password = req.body.user_password;
         const user_email = req.body.user_email;
         const user_phone = req.body.user_phone;
-        const user_id = req.body.user_id; //todo: delete 
+        // const user_id = req.body.user_id; //todo: 
 
-        const isNameExist = await pool.query("SELECT * FROM app_user WHERE user_id = $1", [user_id])
-        .then((user) => {
-            try {
-                if(!user){
-                    console.error(`Error occured while creating User: user_name is already exist: ${error.message}`);
-                }else{
-                    const newUser = pool.query("INSERT INTO app_user (user_name, user_password, user_email, user_phone) VALUES($1, crypt($2, gen_salt('md5')), $3, $4)", [user_name, user_password, user_email, user_phone]);
-                    res.cookie("test", "1").status(200).json(newUser);
+        //check if a name is already exist
+        isNameExist = await pool.query("SELECT * FROM app_user WHERE user_name = $1", [user_name]);        
+        if (isNameExist == 0) {
+            return res.status(400).json({error: `User name (${user_name}) is already exist`});
+        }
+
+        //insert user information (create)
+        isAddSuccess = await pool.query("INSERT INTO app_user (user_name, user_password, user_email, user_phone) VALUES($1, crypt($2, gen_salt('md5')), $3, $4)", [user_name, user_password, user_email, user_phone]);
         
-                }
- 
-            } catch (error) {
-                console.error(`Error occured while checking a user exist: ${error.message}`);
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-        });
+        //get a current user id based on user's name
+        currentUserId = await pool.query("SELECT user_id FROM app_user WHERE user_name = $1", [user_name]);
+        
 
-
-    }catch(err){
+    } catch(err){
         console.error(`Error occured while creating a user: ${err.message}`);
         return res.status(500).json({ error: 'Internal server error' });
     }
+
+    //res.status(200).json({token: jsonwebtoken.sign({user_id: currentUserId}, process.env.JWT_SECRET)});
+
+    console.log(currentUserId.rows[0].user_id);
+     //set a token
+     //todo: why it doesn't create a token??
+    const token = jsonwebtoken.sign({user_id:currentUserId.rows[0].user_id}, process.env.JWT_SECRET);
+    
+     res.cookie("token", token, {maxAge: 1000*60*60});
+     res.status(200).json({token});
 
 });
 
@@ -300,7 +296,13 @@ app.get("/reservations/:id", async(req, res)=>{
 
 // Get available dates based on selected start/endDate
 app.get("/reservations", async(req,res)=>{
-    
+    if (req.cookies.token) {
+        // 1. validate token
+        // if signature is invalid -> throw out, assume not logged in.
+        // if valid, extract uid, and assume logged in
+        // const loggedInUser = extractUser(req.cookie);
+        
+    }
     const startDateFromQuery = req.query.startDate;
     const endDateFromQuery = req.query.endDate;
 
@@ -344,11 +346,11 @@ app.delete("/reservation/:id", async(req, res)=>{
 });
 
 
-
-
-app.listen(PORT, () => {
+ViteExpress.listen(app, PORT, () => {
     console.log(`App is listening to port ${PORT}`);
 
 
-});
+})
+
+// app.listen(PORT, );
 

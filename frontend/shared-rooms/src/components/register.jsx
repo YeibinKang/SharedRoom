@@ -39,7 +39,7 @@ export default function Register() {
        
         console.log(userEmail, userName, userPassword, userPhone);
 
-        fetch(`http://localhost:5555/user`, {
+        fetch(`/user`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
