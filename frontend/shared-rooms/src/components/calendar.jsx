@@ -43,50 +43,55 @@ export default function Calendar() {
 
     //todo: 
     //1. rooms are not showing at first search (i need to select dates twice)
-    function getAvailableRooms(e) {
+    async function getAvailableRooms(e) {
         e.preventDefault();
-        
 
-        fetch(`http://localhost:5555/reservations?startDate=${startDate}&endDate=${endDate}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-            .then((res) => {
-                return res.json().then((data) => {
-                    setRooms(data);
-                    return data;
-                }).catch((err) => {
-                    console.log(err);
-                })
+        let availableRooms;
+        let availableRoomsJSON;
+
+        try{
+            availableRooms = await fetch(`http://localhost:5173/reservations?startDate=${startDate}&endDate=${endDate}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
             });
+            availableRoomsJSON = await availableRooms.json();
 
-
+        } catch (error) {
+            console.error(`Error occured while getting available rooms: ${error.message}`);
+            
+        }
+        console.log(availableRoomsJSON);
+        setRooms(availableRoomsJSON.rows);
+        return availableRoomsJSON.rows;
     }
 
     // open new window with selected room details
     // pass with start/end date, room information, user info
-    function getRoomDetails() {
- 
+    async function getRoomDetails() {
+        
         const roomName = selectedRoom;
-        //find a room information with roomName (fetch)
-        fetch(`http://localhost:5555/room?roomName=${roomName}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-            .then((res) => {
-                return res.json().then((data) => {
-                    setSelectedRoom(data[0]);
-                    navigate('/RoomDetailPage', { state: { room_name: data[0].room_name, room_price: data[0].room_price, room_description: data[0].room_description, room_photo: data[0].room_photo, room_id: data[0].room_id, start_date: startDate, end_date: endDate } });
+        let roomInfo;
+        let roomInfoJSON;
+        let roomFromFetch;
 
-                }).catch((err) => {
-                    console.log(err.message);
-                })
+        try{
+            roomInfo = await fetch(`http://localhost:5173/room?roomName=${roomName}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
             });
+            roomInfoJSON = await roomInfo.json();
 
+        }catch(error){
+            console.log(`Error occured while geeting room details: ${error.message}`);
+        }
+        
+        roomFromFetch = roomInfoJSON.rows[0];
+        setSelectedRoom(roomFromFetch);
+        navigate('/RoomDetailPage', { state: { room_name: roomFromFetch.room_name, room_price: roomFromFetch.room_price, room_description: roomFromFetch.room_description, room_photo: roomFromFetch.room_photo, room_id: roomFromFetch.room_id, start_date: startDate, end_date: endDate } });
         
     }
 

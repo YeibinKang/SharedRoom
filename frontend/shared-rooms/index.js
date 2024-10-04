@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import ViteExpress from "vite-express";
 import jwt from "express-jwt";
 import jsonwebtoken from "jsonwebtoken";
+import {useCookies} from "react-cookie";
 
 
 dotenv.config();
@@ -18,6 +19,10 @@ app.use(cors());
 
 app.use(express.json());
 app.use(cookieParser(sercretKey));
+
+
+
+//TODO: add data validation
 
 
 // Create a room with data
@@ -98,8 +103,9 @@ app.delete("/room/:id", async(req, res) => {
 // Create a user
     //user_name shouldn't be duplicated
     //user_password should be hashed
-    //todo: after creating a user, the user should be logged in automatically.
+    //todo: after creating a user, the user should be logged in automatically. (handling cookie!!)
 app.post("/user", async(req, res)=>{
+    
 
     let isNameExist;
     let isAddSuccess;
@@ -112,7 +118,6 @@ app.post("/user", async(req, res)=>{
         const user_password = req.body.user_password;
         const user_email = req.body.user_email;
         const user_phone = req.body.user_phone;
-        // const user_id = req.body.user_id; //todo: 
 
         //check if a name is already exist
         isNameExist = await pool.query("SELECT * FROM app_user WHERE user_name = $1", [user_name]);        
@@ -132,122 +137,128 @@ app.post("/user", async(req, res)=>{
         return res.status(500).json({ error: 'Internal server error' });
     }
 
-    //res.status(200).json({token: jsonwebtoken.sign({user_id: currentUserId}, process.env.JWT_SECRET)});
-
     console.log(currentUserId.rows[0].user_id);
      //set a token
      //todo: why it doesn't create a token??
-    const token = jsonwebtoken.sign({user_id:currentUserId.rows[0].user_id}, process.env.JWT_SECRET);
+     //setCookie('user_id', jsonwebtoken.sign({user_id:currentUserId.rows[0].user_id}, process.env.JWT_SECRET));
+
+    //const token = ;
     
-     res.cookie("token", token, {maxAge: 1000*60*60});
-     res.status(200).json({token});
+    //  res.cookie("token", token, {maxAge: 1000*60*60});
+    //  res.status(200).json({token});
 
 });
 
-// update user information
+//Update user information
     // cannot change user name
-
 app.put("/user/:id", async(req, res)=>{
+
+    let updatedUser;
 
     try {
         const currentUserId = req.params.id;
-        console.log(`current user's id: ${currentUserId}`);
-        const currentUser = pool.query("SELECT * FROM app_user WHERE user_id = ($1)", [currentUserId])
-        .then((user)=>{
-            console.log(`Current user's name: ${user.rows[0].user_name}`);
-        });
-        
-       
-        const updateUserInfo = req.body;
-
-        const updateInfo = await pool.query("UPDATE app_user SET user_password = crypt($1, gen_salt('md5')), user_phone = $2, user_email = $3 WHERE user_id = $4", [updateUserInfo.user_password, updateUserInfo.user_phone, updateUserInfo.user_email, currentUserId])
-        .then((user)=>{
-            res.status(200).json(user);
-        });
+        const userInfo = req.body;
+        updatedUser = await pool.query("UPDATE app_user SET user_password = crypt($1, gen_salt('md5')), user_phone = $2, user_email = $3 WHERE user_id = $4", [userInfo.user_password, userInfo.user_phone, userInfo.user_email, currentUserId]);
         
     } catch (error) {
         console.error(`Error occured while updating a user info: ${error.message}`);
         return res.status(500).json({ error: 'Internal server error' });
     }
 
+    return res.status(200);
+
 });
 
 // delete user
 app.delete('/user/:id', async(req, res)=>{
+    let currentUser;
+
     try {   
 
         // current id
         const currentUserId = req.params.id;
-        console.log(`current user's id: ${currentUserId}`);
-
-        const currentUser = pool.query("DELETE FROM app_user WHERE user_id = ($1)", [currentUserId])
-        .then((user)=>{
-            
-            if(user.rowCount == 0){
-                console.log(`User is deleted`);
-                res.status(200);
-            }else{
-                console.log(`User hasn't deleted`);
-            }
-            
-        });
-
-        // TODO: User should be logged out.
-
+        currentUser = await pool.query("DELETE FROM app_user WHERE user_id = $1", [currentUserId]);
         
     } catch (error) {
         console.error(`Error occured while deleting a user: ${error.message}`);
         return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    console.log(currentUser.rowCount);
+    if(currentUser.rowCount != 0){
+        console.log(`User is deleted`);
+         // TODO: User should be logged out.
+         // TODO: delete current cookie
+        return res.status(200);
+    }else{
+        console.log(`User hasn't deleted`);
     }
 });
 
 
 // create a reservation
     //id = room id
+    //TODO: after wb's answer
 app.post("/reservation/:id", async(req, res)=>{
+
+    const currentRoomId = req.body.room_id.roomId;
+    const start_date = req.body.start_date.startDate;
+    const end_date = req.body.end_date.endDate;
+    let newReservation;
+    let getPricePerNight;
+    let pricePerNight;
+    let stay_days = calculateDays(start_date, end_date);
+    const user_id = 1; //todo: need to get a id from cookie?
+    let total_price = 0;
+
     try{
+        newReservation = await pool.query(`INSERT INTO reservation (start_date, end_date, room_id, user_id) VALUES(TO_DATE('$1'::text, 'YYYY-MM-DD'), TO_DATE('$2'::text, 'YYYY-MM-DD'), $3, $4)`, [start_date, end_date, currentRoomId, user_id]);
 
-        const currentRoomId = req.body.room_id.roomId; //todo: user should click the room and room's id will be in parameter
-        const start_date = req.body.start_date.startDate;
-        const end_date = req.body.end_date.endDate;
-        const stay_days = calculateDays(start_date, end_date);
-        const user_id = 1; //todo: need to get a id from cookie?
-        let total_price = 0;
+        getPricePerNight = await pool.query("SELECT (room_price) FROM room WHERE room_id = $1", [currentRoomId]);
 
-        //console.log(start_date.);
-        console.log(typeof(start_date));
-        console.log(req.body);
-        console.log(`Start, end, room id: ${start_date}. ${end_date}, ${currentRoomId}`);
 
-        const newReservation = pool.query(`INSERT INTO reservation (start_date, end_date, room_id, user_id) VALUES(TO_DATE('${start_date}'::text, 'YYYY-MM-DD'), TO_DATE('${end_date}'::text, 'YYYY-MM-DD'), ${currentRoomId}, 1)`)
-
-        let price_per_night = pool.query("SELECT (room_price) FROM room WHERE room_id = $1", [currentRoomId])
-        .then((room)=>{
-            try {
-                if(room.rowCount == 0){
-                    console.log(`No room to be matched`);
-                }else{
-                    price_per_night = room.rows[0].room_price;
+        // let price_per_nigh1 = pool.query("SELECT (room_price) FROM room WHERE room_id = $1", [currentRoomId])
+        // .then((room)=>{
+        //     try {
+        //         if(room.rowCount == 0){
+        //             console.log(`No room to be matched`);
+        //         }else{
+        //             price_per_night = room.rows[0].room_price;
                     
 
-                    console.log("total price: ", stay_days * price_per_night);
+        //             console.log("total price: ", stay_days * price_per_night);
 
-                    total_price = price_per_night * stay_days;
+        //             total_price = price_per_night * stay_days;
 
-                    pool.query("UPDATE reservation SET total_price = $1 WHERE room_id = $2", [total_price, currentRoomId]);
-                }
-            } catch (error) {
-                console.log(`Error occured while getting a price per night: ${error.message}`);
-            }
-        });
+        //             pool.query("UPDATE reservation SET total_price = $1 WHERE room_id = $2", [total_price, currentRoomId]);
+        //         }
+        //     } catch (error) {
+        //         console.log(`Error occured while getting a price per night: ${error.message}`);
+        //     }
+        // });
     
-        res.status(200).json(newReservation);
+        // res.status(200).json(newReservation);
         
         
     }catch(err){
         console.error(`Error occured while creating a reservation: ${err.message}`);
         return res.status(500).json({ error: 'Internal server error' });
     }
+
+    if(newReservation.rowCount == 0){
+        console.log(`No room hasn't created`);
+    }else{
+        
+        pricePerNight = newReservation.rows[0].room_price;
+        
+        total_price = pricePerNight * stay_days;
+        console.log(`total price is ${total_price}`);
+        const updateTotalPrice = await pool.query("UPDATE reservation SET total_price = $1 WHERE room_id = $2", [total_price, currentRoomId]);
+
+    }
+    
+    res.status(200).json(newReservation);
+
 });
 
 
@@ -266,58 +277,62 @@ function calculateDays(startDate, endDate){
     // it show current user's reservations in my-page
     // id in param is user's id
     // todo: getting current user's id from cookie, 
+//TODO:after  wb answer
 app.get("/reservations/:id", async(req, res)=>{
+    
+    const currentUserId = req.params.id;
+    let allReservations;
+
     try {   
 
-        const currentUserId = req.params.id;
-        
-        const allReservations = await pool.query("SELECT * FROM reservation r INNER JOIN room rm ON r.room_id = rm.room_id AND user_id = $1", [currentUserId])
-        .then((reservations)=>{
-            try 
-            {
-                if(reservations.rowCount != 0){
-                    console.log(`${reservations.rowCount} of reservations are selected`);
-                    res.status(200).json(reservations.rows);
-                }else{
-                    console.log(`No reservations`);
-                }
-                
-            } catch (error) {
-                console.error(`Error occured while getting all rooms: ${error.message}`)
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-        });
+        allReservations = await pool.query("SELECT * FROM reservation r INNER JOIN room rm ON r.room_id = rm.room_id AND user_id = $1", [currentUserId]);
 
     } catch (error) {
         console.error(`Error occured while getting all rooms: ${error.message}`)
         return res.status(500).json({ error: 'Internal server error' });
     }
+
+    // .then((reservations)=>{
+    //     try 
+    //     {
+    //         if(reservations.rowCount != 0){
+    //             console.log(`${reservations.rowCount} of reservations are selected`);
+    //             res.status(200).json(reservations.rows);
+    //         }else{
+    //             console.log(`No reservations`);
+    //         }
+            
+    //     } catch (error) {
+    //         console.error(`Error occured while getting all rooms: ${error.message}`)
+    //         return res.status(500).json({ error: 'Internal server error' });
+    //     }
+    // });
+    
 });
 
 // Get available dates based on selected start/endDate
 app.get("/reservations", async(req,res)=>{
-    if (req.cookies.token) {
-        // 1. validate token
-        // if signature is invalid -> throw out, assume not logged in.
-        // if valid, extract uid, and assume logged in
-        // const loggedInUser = extractUser(req.cookie);
+
+    // if (req.cookies.token) {
+    //     // 1. validate token
+    //     // if signature is invalid -> throw out, assume not logged in.
+    //     // if valid, extract uid, and assume logged in
+    //     // const loggedInUser = extractUser(req.cookie);
         
-    }
+    // }
+
     const startDateFromQuery = req.query.startDate;
     const endDateFromQuery = req.query.endDate;
+    let availableRooms;
 
-    try {
-        // Serach available rooms
-        const availableRooms = pool.query(`SELECT * FROM room WHERE room_id NOT IN (SELECT room_id from reservation WHERE start_date >= TO_DATE('${endDateFromQuery}'::text, 'YYYY-MM-DD') AND end_date <= TO_DATE('${startDateFromQuery}'::text, 'YYYY-MM-DD'));`)
-        .then((rooms)=>{
-            //res.status(200).json(rooms.rows);
-            return res.status(200).json(rooms.rows);
-        });
-        //return availableRooms;
+     try {
+    // Search available rooms
+        availableRooms = await pool.query("SELECT * FROM room WHERE room_id NOT IN (SELECT room_id from reservation WHERE start_date >= TO_DATE($1::text, 'YYYY-MM-DD') AND end_date <= TO_DATE($2::text, 'YYYY-MM-DD'))", [endDateFromQuery, startDateFromQuery]);
         
     } catch (error) {
         console.error(`Error occured while getting available rooms: ${error.message}`);
     }
+    return res.status(200).json(availableRooms);
 });
 
 
@@ -351,6 +366,3 @@ ViteExpress.listen(app, PORT, () => {
 
 
 })
-
-// app.listen(PORT, );
-
