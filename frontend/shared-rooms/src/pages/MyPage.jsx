@@ -8,6 +8,7 @@ export default function MyPage(){
         <div>
             <Navbar></Navbar>
             <SideMenu></SideMenu>
+            <h1>My page</h1>
             <footer></footer>
         </div>
         

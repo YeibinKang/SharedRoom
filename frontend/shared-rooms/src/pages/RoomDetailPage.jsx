@@ -39,33 +39,59 @@ export default function RoomDetailPage() {
     // todo: before booking, user should be logged
         // should check if the user is logged in
 
-        
-    //make a reservation
-    function bookRoom(){
-        //room id 
-        //fetch
-        fetch(`http://localhost:5555/reservation/${roomId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                start_date: {startDate},
-                end_date: {endDate},
-                room_id: {roomId},
-                user_id: 1
-            })
-        })
-            .then((res) => {
-                return res.json().then((data) => {
-                    //console.log(data);
-                    alert("Booking is done!");
-                    navigate('/');
 
-                }).catch((err) => {
-                    console.log(err.message);
+    //make a reservation
+    async function bookRoom(){
+        //room id 
+       
+        let sendReservationJSON;
+
+        try {
+            let sendReservation = await fetch(`http://localhost:5173/reservation/${roomId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    start_date: {startDate},
+                    end_date: {endDate},
+                    room_id: {roomId},
+                    user_id: 1
                 })
             });
+            sendReservationJSON = await sendReservation.json();
+            
+        } catch (error) {
+            console.log(`Error occured while making a reservation: ${error.message}`);
+        }
+
+        console.log(sendReservationJSON.rows);
+        alert("Booking is done!");
+        navigate('/');
+
+        //fetch
+        // fetch(`http://localhost:5173/reservation/${roomId}`, {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify({
+        //         start_date: {startDate},
+        //         end_date: {endDate},
+        //         room_id: {roomId},
+        //         user_id: 1
+        //     })
+        // })
+        //     .then((res) => {
+        //         return res.json().then((data) => {
+        //             //console.log(data);
+        //             alert("Booking is done!");
+        //             navigate('/');
+
+        //         }).catch((err) => {
+        //             console.log(err.message);
+        //         })
+        //     });
   
     }
 
