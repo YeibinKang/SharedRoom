@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -6,6 +7,7 @@ export default function Register() {
     
     //todo: need to create functions to handle creating user
         // when click Sign up button
+    const navigate = useNavigate();
 
     const [userName, setUserName] = useState("");
     const [userPassword, setUserPassword] = useState("");
@@ -31,35 +33,53 @@ export default function Register() {
         console.log(userEmail);
     }
 
-    //todo: why breaker is not passing to this
-    function handleCreateUser(e){
+    async function handleCreateUser(e){
 
         e.preventDefault();
         e.stopPropagation();
        
         console.log(userEmail, userName, userPassword, userPhone);
 
-        fetch(`/user`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                user_name:userName,
-                user_password:userPassword,
-                user_phone:userPhone,
-                user_email:userEmail,
-            })
-        })
-            .then((res) => {
-                return res.json().then((data) => {
-                    console.log(data);
-                    
-                }).catch((err) => {
-                    console.log(err.message);
+        try {
+            const createUser = await fetch(`/user`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_name:userName,
+                    user_password:userPassword,
+                    user_phone:userPhone,
+                    user_email:userEmail,
                 })
             });
+
+        } catch (error) {
+            console.log(`Error occured while registering a user: ${error.message}`);
+        }
+
+        // fetch(`/user`, {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify({
+        //         user_name:userName,
+        //         user_password:userPassword,
+        //         user_phone:userPhone,
+        //         user_email:userEmail,
+        //     })
+        // })
+        //     .then((res) => {
+        //         return res.json().then((data) => {
+        //             console.log(data);
+                    
+        //         }).catch((err) => {
+        //             console.log(err.message);
+        //         })
+        //     });
                
+        navigate('/');
 
 
     }

@@ -3,17 +3,48 @@ Determine the user
 Indentify user's goals
     : find and save a room they want to stay during a travel.
 
-<<Process>>
-User selects wanted dates (start/endDate) from a Homepage
-    - it shows a list of available rooms
+
+1. Home Page (Calendar page)
+User selects wanted dates (start/endDate)
+    - it shows a list of available rooms (room table)
 User selects wanted room from the list
-    - it leads a room detail page
+    - it navigates to a room detail page
 
 
+2. Room Detail Page
+User clicks a book button
+    - it should check if a user is logged in or not (todo)
+        - if not : ask user to login
+        - if already logged in
+            - it saves a reservation into DB (reservation table)
+            - after saving, navigates to Home page
 
-My-page
-    Update user information
+
+3. Regsiter Page
+User fills out a from
+User clicks register button
+    - it saves a user information into DB (app_user table)
+    - let user in login mode (todo)
+    - it navigates to Home page
+
+4. Log-in Page
+User fills out a log-in form (user name, password)
+    - it checks user's data
+        - if user's data is valid
+            - it creates a cookie (with JWT session)
+            - it navigates to Home page
+        - if not, ask user to log in again
+
+5. My-page
+Only logged in user can navigate to My-page (todo)
+    - if not, ask user to login
+User updates user information
     : user cannot change the information\
+
+Log-in button change Navigation bar
+button should be changed to Log-out when user logged in
+button should be changed to Log-in when user logged out (click logout, delete user info)
+
 
 
 오빠! quick question! 

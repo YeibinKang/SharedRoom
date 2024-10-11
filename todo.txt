@@ -1,9 +1,19 @@
-1. My page  
-    User information update
-    - show current value at the input box
+
+User Log-in check moments
+1. After User Regsiters an account
+2. After Login
+3. Before accessing to My-page 
+4. Before making a reservation
 
 
-Is user logged-in?
-    :using JWT token? cookie?
+Creat a function for user's log-in status (id from cookie (document.cookie) = current id)
+1. Navigate to My-page: user can access to My Page to modify information
+    - todo: how to get current user id?
+    - 
+
+After Login,
+1. Log-in button should be changed to Logout.
+2. Log-in status whill be continued until user Logout
 
 
+Logout button -> logout (delete the cookie)

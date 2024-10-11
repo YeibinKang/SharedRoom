@@ -140,12 +140,15 @@ app.post("/user", async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 
-    console.log(currentUserId.rows[0].user_id);
+    const accessToken = jwt.sign({ id: currentUserId.rows[0].user_id }, sercretKey);
+    res.cookie(currentUserId.rows[0].user_id, accessToken, {maxAge: 1200000});
+    res.status(200).json({
+        user_id: currentUserId.rows[0].user_id,
+        accessToken
+    });
 
-    //todo: generate access token
-    const accesToken = jsonwebtoken.sign({ id: currentUserId }, sercretKey);
-    res.json(accesToken);
-
+    //navigate to Home
+    
 });
 
 
@@ -196,6 +199,7 @@ app.delete('/user/:id', async (req, res) => {
     }
 });
 
+// user login
 app.post('/user/login', async (req, res) => {
 
     let loginUser;
@@ -215,10 +219,10 @@ app.post('/user/login', async (req, res) => {
 
 
     if (loginUser.rowCount != 0) {
+        
         //generate Token
-
         const accessToken = jwt.sign({ id: loginUser.rows[0].user_id }, sercretKey);
-        res.cookie(loginUser.rows[0].user_id, accessToken, { httpOnly: true });
+        res.cookie(loginUser.rows[0].user_id, accessToken, {maxAge: 1200000});
 
         res.status(200).json({
             user_id: loginUser.rows[0].user_id,
@@ -233,7 +237,7 @@ app.post('/user/login', async (req, res) => {
     // works with only right after the logging in. Log in -> my page (works) -> Home -> my page (not authenticated)
     // even though, user is in cookie, it said user not authenticated
     // how to keep the token with other situations (e.g. )
-    
+
 const validateToken = (req, res, next)=>{
     const accessToken = req.cookies["access-token"];
 

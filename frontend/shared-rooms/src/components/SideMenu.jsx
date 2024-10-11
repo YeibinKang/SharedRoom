@@ -1,4 +1,17 @@
 export default function SideMenu(){
+
+
+    //get user's information
+    async function getUser(){
+        
+    }
+
+
+    //get user's reservation information
+    async function getReservations(){
+
+    }
+
     return(
         <div className="flex h-screen flex-col justify-between border-e bg-white">
     <div className="px-4 py-6">
