@@ -44,13 +44,3 @@ User updates user information
 Log-in button change Navigation bar
 button should be changed to Log-out when user logged in
 button should be changed to Log-in when user logged out (click logout, delete user info)
-
-
-
-오빠! quick question! 
-지금 하고 있는 프로젝트.. 
-
-object를 fetch해서 잘 받아와서 rendering을 해서 화면에 보여주려고 하는데, rendering이 안되는 상황..
-: 혹시 render를 하는 기능을 fetch 후에 then statement 안에서 하려고 했는데,이 컨셉 부터가 잘못 된걸까?
-근데 then statement 안에서 설정한 값은 global 하게 볼 수가 없으니.. 어떻게 하는게 좋을까?
-검색하다보니 fetch를 하는 함수를 async로 하고, 그 값을 await 한 다음에 global 변수에 넣으라는데.. 이 방법은 맞는걸까? 
