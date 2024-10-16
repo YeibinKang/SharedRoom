@@ -16,6 +16,7 @@ export default function RoomDetailPage() {
     const startDate = location.state.start_date;
     const endDate = location.state.end_date;
     const stayDays = calculateDays(startDate, endDate);
+    const currentUserId = document.cookie;
     //const {roomName, roomPrice} = state;
     const navigate = useNavigate();
 
@@ -37,7 +38,6 @@ export default function RoomDetailPage() {
     }
 
     // todo: before booking, user should be logged
-        // should check if the user is logged in
 
 
     //make a reservation
@@ -47,7 +47,7 @@ export default function RoomDetailPage() {
         let sendReservationJSON;
 
         try {
-            let sendReservation = await fetch(`http://localhost:5173/reservation/${roomId}`, {
+            let sendReservation = await fetch(`http://localhost:5173/reservation`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export default function RoomDetailPage() {
                     start_date: {startDate},
                     end_date: {endDate},
                     room_id: {roomId},
-                    user_id: 1
+                    user_id: {currentUserId}
                 })
             });
             sendReservationJSON = await sendReservation.json();

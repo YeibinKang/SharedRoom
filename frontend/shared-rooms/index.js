@@ -10,6 +10,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import Cookies from "js-cookie";
 import verify from "jsonwebtoken";
+import { Navigate } from "react-router-dom";
 
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser(sercretKey));
 
+let currentUserId;
 
 
 //TODO: add data validation
@@ -141,14 +143,14 @@ app.post("/user", async (req, res) => {
     }
 
     const accessToken = jwt.sign({ id: currentUserId.rows[0].user_id }, sercretKey);
-    res.cookie(currentUserId.rows[0].user_id, accessToken, {maxAge: 1200000});
+    res.cookie(currentUserId.rows[0].user_id, accessToken, { maxAge: 1200000 });
     res.status(200).json({
         user_id: currentUserId.rows[0].user_id,
         accessToken
     });
 
     //navigate to Home
-    
+
 });
 
 
@@ -210,8 +212,6 @@ app.post('/user/login', async (req, res) => {
 
         loginUser = await pool.query("SELECT * FROM app_user WHERE $1 = user_password AND $2 = user_name", [user_password, user_name]);
 
-
-
     } catch (error) {
         console.error(`Error occured while login with a user id: ${error.message}`);
         return res.status(500).json({ error: 'Internal server error' });
@@ -219,88 +219,98 @@ app.post('/user/login', async (req, res) => {
 
 
     if (loginUser.rowCount != 0) {
-        
+
         //generate Token
         const accessToken = jwt.sign({ id: loginUser.rows[0].user_id }, sercretKey);
-        res.cookie(loginUser.rows[0].user_id, accessToken, {maxAge: 1200000});
 
+        //loginUser.rows[0].user_id
+        currentUserId = loginUser.rows[0].user_id;
+        res.cookie(currentUserId, accessToken, { maxAge: 1200000 });
+
+        //user_id: loginUser.rows[0].user_id,
         res.status(200).json({
-            user_id: loginUser.rows[0].user_id,
+            user_id: accessToken.id,
             accessToken
         });
     }
+    console.log(`current user id: ${currentUserId}`);
 
 });
 
+
 // validate token middleware
-    //todo:
-    // works with only right after the logging in. Log in -> my page (works) -> Home -> my page (not authenticated)
-    // even though, user is in cookie, it said user not authenticated
-    // how to keep the token with other situations (e.g. )
+const validateToken = (req, res, next) => {
 
-const validateToken = (req, res, next)=>{
-    const accessToken = req.cookies["access-token"];
+    const accessToken = req.cookies['token'];
+    console.log(`acce: ${accessToken}`);
 
-    if(!accessToken){
-        return res.status(400).json({error: "user not authenticated"});
+    if (!accessToken) {
+        return res.status(400).json({ error: "user not authenticated" });
     }
 
-    try{
-        const validToken = verify(accessToken, sercretKey);
-        if(validToken){
+    try {
+        const validToken = jwt.verify(accessToken, sercretKey);
+        if (validToken) {
             req.authenticated = true;
             return next();
         }
-    }catch(error){
-        return res.status(400).json({error: error});
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
 
     }
 }
 
-app.get('/MyPage', validateToken, (req,res)=>{
-    res.json("my page");
+//todo: using current user's id
+app.get('/MyPage', validateToken, (req, res) => {
+    //Navigate('/MyPage');
+    console.log(currentUserId);
 
 })
 
 
 // create a reservation
-//id = room id
-//TODO: after wb's answer
-app.post("/reservation/:id", async (req, res) => {
+app.post("/reservation", async (req, res) => {
 
     const currentRoomId = req.body.room_id.roomId;
     const start_date = req.body.start_date.startDate;
     const end_date = req.body.end_date.endDate;
     let newReservation;
-    let getPricePerNight;
+    let pricePerNightPromise;
     let pricePerNight;
     let stay_days = calculateDays(start_date, end_date);
-    const user_id = 1; //todo: need to get a id from cookie?
+    const user_id = currentUserId;
     let total_price = 0;
+    let newReservationPromise;
+    let reservationId;
+    let updateReservationPromise;
 
     try {
-        newReservation = await pool.query("INSERT INTO reservation (start_date, end_date, room_id, user_id) VALUES(TO_DATE('$1'::text, 'YYYY-MM-DD'), TO_DATE('$2'::text, 'YYYY-MM-DD'), $3, $4)", [start_date, end_date, currentRoomId, user_id]);
+        newReservation = await pool.query("INSERT INTO reservation (start_date, end_date, room_id, user_id) VALUES(TO_DATE($1::text, 'YYYY-MM-DD'), TO_DATE($2::text, 'YYYY-MM-DD'), $3, $4)", [start_date, end_date, currentRoomId, user_id]);
 
-        getPricePerNight = await pool.query("SELECT (room_price) FROM room WHERE room_id = $1", [currentRoomId]);
+        //if inserting is success, keep doing it
+        //if not, do noting
+
+        if (newReservation.rowCount == 1) {
+ 
+            newReservationPromise = await pool.query("SELECT (reservation_id) FROM reservation WHERE start_date = TO_DATE($1::text, 'YYYY-MM-DD') AND end_date = TO_DATE($2::text, 'YYYY-MM-DD') AND user_id = $3 AND room_id = $4", [start_date, end_date, user_id, currentRoomId]);
+            console.log(`new generated id: ${newReservationPromise.rows[0].reservation_id}`);
+            reservationId = newReservationPromise.rows[0].reservation_id;
+
+
+            pricePerNightPromise = await pool.query("SELECT (room_price) FROM room WHERE room_id = $1", [currentRoomId]);
+            // //update price and query 
+            pricePerNight = pricePerNightPromise.rows[0].room_price;
+            total_price = pricePerNight * stay_days;
+            updateReservationPromise = await pool.query("UPDATE reservation SET total_price = $1 WHERE reservation_id = $2", [total_price, reservationId]);
+            
+        } else {
+            return res.status(500).json({ Error: 'SQL: Inserting failed' });
+        }
 
     } catch (err) {
         console.error(`Error occured while creating a reservation: ${err.message}`);
         return res.status(500).json({ error: 'Internal server error' });
     }
-
-
-
-    pricePerNight = newReservation.rows[0].room_price;
-    const currentReservationId = newReservation.rows[0].reservation_id;
-
-    total_price = pricePerNight * stay_days;
-    console.log(`total price is ${total_price}`);
-
-    //todo: where should i put this line??
-    const updateTotalPrice = await pool.query("UPDATE reservation SET total_price = $1 WHERE reservation_id = $2", [total_price, currentReservationId]);
-
-
-    res.status(200).json(newReservation);
 
 });
 
@@ -323,7 +333,9 @@ function calculateDays(startDate, endDate) {
 //TODO:after  wb answer
 app.get("/reservations/:id", async (req, res) => {
 
+    //todo
     const currentUserId = req.params.id;
+
     let allReservations;
 
     try {
@@ -335,34 +347,11 @@ app.get("/reservations/:id", async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 
-    // .then((reservations)=>{
-    //     try 
-    //     {
-    //         if(reservations.rowCount != 0){
-    //             console.log(`${reservations.rowCount} of reservations are selected`);
-    //             res.status(200).json(reservations.rows);
-    //         }else{
-    //             console.log(`No reservations`);
-    //         }
-
-    //     } catch (error) {
-    //         console.error(`Error occured while getting all rooms: ${error.message}`)
-    //         return res.status(500).json({ error: 'Internal server error' });
-    //     }
-    // });
-
 });
 
 // Get available dates based on selected start/endDate
 app.get("/reservations", async (req, res) => {
 
-    // if (req.cookies.token) {
-    //     // 1. validate token
-    //     // if signature is invalid -> throw out, assume not logged in.
-    //     // if valid, extract uid, and assume logged in
-    //     // const loggedInUser = extractUser(req.cookie);
-
-    // }
 
     const startDateFromQuery = req.query.startDate;
     const endDateFromQuery = req.query.endDate;

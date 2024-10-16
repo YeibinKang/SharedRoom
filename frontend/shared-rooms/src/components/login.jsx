@@ -19,13 +19,9 @@ export default function login() {
   }
 
 
-  //todo: check the user's pw and id are matched.
-  // move to home page (user's logged in situation should be maintained)
   async function userLogIn(e) {
     e.preventDefault();
     e.stopPropagation();
-
-    //console.log(userName, userPassword);
 
     try {
       const userLogin = await fetch(`/user/login`, {
@@ -43,8 +39,8 @@ export default function login() {
     }
 
     
-
-    navigate('/MyPage');
+    
+    navigate('/');
 
   }
 
