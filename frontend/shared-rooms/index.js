@@ -291,7 +291,7 @@ app.post("/reservation", async (req, res) => {
         //if not, do noting
 
         if (newReservation.rowCount == 1) {
- 
+
             newReservationPromise = await pool.query("SELECT (reservation_id) FROM reservation WHERE start_date = TO_DATE($1::text, 'YYYY-MM-DD') AND end_date = TO_DATE($2::text, 'YYYY-MM-DD') AND user_id = $3 AND room_id = $4", [start_date, end_date, user_id, currentRoomId]);
             console.log(`new generated id: ${newReservationPromise.rows[0].reservation_id}`);
             reservationId = newReservationPromise.rows[0].reservation_id;
@@ -302,7 +302,7 @@ app.post("/reservation", async (req, res) => {
             pricePerNight = pricePerNightPromise.rows[0].room_price;
             total_price = pricePerNight * stay_days;
             updateReservationPromise = await pool.query("UPDATE reservation SET total_price = $1 WHERE reservation_id = $2", [total_price, reservationId]);
-            
+
         } else {
             return res.status(500).json({ Error: 'SQL: Inserting failed' });
         }
@@ -327,10 +327,7 @@ function calculateDays(startDate, endDate) {
 }
 
 // get a list of reservations
-// it show current user's reservations in my-page
-// id in param is user's id
-// todo: getting current user's id from cookie, 
-//TODO:after  wb answer
+
 app.get("/reservations/:id", async (req, res) => {
 
     //todo
@@ -339,7 +336,6 @@ app.get("/reservations/:id", async (req, res) => {
     let allReservations;
 
     try {
-
         allReservations = await pool.query("SELECT * FROM reservation r INNER JOIN room rm ON r.room_id = rm.room_id AND user_id = $1", [currentUserId]);
 
     } catch (error) {
@@ -349,7 +345,7 @@ app.get("/reservations/:id", async (req, res) => {
 
 });
 
-// Get available dates based on selected start/endDate
+// Get available rooms based on selected start/endDate
 app.get("/reservations", async (req, res) => {
 
 
@@ -359,7 +355,7 @@ app.get("/reservations", async (req, res) => {
 
     try {
         // Search available rooms
-        availableRooms = await pool.query("SELECT * FROM room WHERE room_id NOT IN (SELECT room_id from reservation WHERE start_date >= TO_DATE($1::text, 'YYYY-MM-DD') AND end_date <= TO_DATE($2::text, 'YYYY-MM-DD'))", [endDateFromQuery, startDateFromQuery]);
+        availableRooms = await pool.query("SELECT * FROM room WHERE room_id NOT IN (SELECT room_id from reservation WHERE start_date >= TO_DATE($2::text, 'YYYY-MM-DD') AND end_date <= TO_DATE($1::text, 'YYYY-MM-DD'))", [endDateFromQuery, startDateFromQuery]);
 
     } catch (error) {
         console.error(`Error occured while getting available rooms: ${error.message}`);
