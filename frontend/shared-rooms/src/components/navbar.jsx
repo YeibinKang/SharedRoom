@@ -24,7 +24,6 @@ export default function Navbar() {
     try {
       buttonPromise = await document.querySelector('#loginButton');
       setButton(buttonPromise)
-      console.log(buttonPromise);
     } catch (error) {
       console.log(`error message: ${error.message}`);
     }
@@ -47,7 +46,7 @@ export default function Navbar() {
   function handleLoginClick() {
 
     const userId = getUserId();
-    
+
 
     if (button.textContent == "logout") {
 

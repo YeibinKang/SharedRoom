@@ -10,7 +10,9 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import Cookies from "js-cookie";
 import verify from "jsonwebtoken";
-import { Navigate } from "react-router-dom";
+import { BrowserRouter, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+
 
 
 dotenv.config();
@@ -175,6 +177,21 @@ app.put("/user/:id", async (req, res) => {
 
 });
 
+
+//Get user information
+app.get("/user/:id", async (req, res) => {
+    let user;
+    const userId = req.params.id;
+    try {
+        user = await pool.query("SELECT * FROM app_user WHERE user_id = $1", [userId]);
+    } catch (error) {
+        console.error(`Error occured while getting a user information: ${error.message}`);
+        return res.status(500).json({ error: 'server error' });
+    }
+
+    return res.status(200).json(user);
+})
+
 // delete user
 app.delete('/user/:id', async (req, res) => {
     let currentUser;
@@ -223,7 +240,6 @@ app.post('/user/login', async (req, res) => {
         //generate Token
         const accessToken = jwt.sign({ id: loginUser.rows[0].user_id }, sercretKey);
 
-        //loginUser.rows[0].user_id
         currentUserId = loginUser.rows[0].user_id;
         res.cookie(currentUserId, accessToken, { maxAge: 1200000 });
 
@@ -238,34 +254,26 @@ app.post('/user/login', async (req, res) => {
 });
 
 
-// validate token middleware
-const validateToken = (req, res, next) => {
+app.get('/MyPage/:id', async (req, res) => {
 
-    const accessToken = req.cookies['token'];
-    console.log(`acce: ${accessToken}`);
+    const currentUserId = req.params.id;
 
-    if (!accessToken) {
-        return res.status(400).json({ error: "user not authenticated" });
-    }
+    console.log(`user id from api call: ${currentUserId}`);
+
+    //bring all reservations with user id
+    let allReservations;
 
     try {
-        const validToken = jwt.verify(accessToken, sercretKey);
-        if (validToken) {
-            req.authenticated = true;
-            return next();
-        }
+        allReservations = await pool.query("SELECT * FROM reservation r INNER JOIN room rm ON r.room_id = rm.room_id AND user_id = $1", [currentUserId]);
+
     } catch (error) {
-        return res.status(400).json({ error: error.message });
-
+        console.error(`Error occured while getting all rooms: ${error.message}`)
+        return res.status(500).json({ error: 'Internal server error' });
     }
-}
 
-//todo: using current user's id
-app.get('/MyPage', validateToken, (req, res) => {
-    //Navigate('/MyPage');
-    console.log(currentUserId);
-
+    res.status(200).json(allReservations);
 })
+
 
 
 // create a reservation

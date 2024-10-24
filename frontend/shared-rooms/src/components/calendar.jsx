@@ -20,7 +20,7 @@ export default function Calendar() {
 
     const navigate = useNavigate();
 
-    function getCurrentDate(){
+    function getCurrentDate() {
         let yourDate = new Date()
         yourDate.toISOString().split('T')[0]
         const offset = yourDate.getTimezoneOffset();
@@ -41,15 +41,13 @@ export default function Calendar() {
     }
 
 
-    //todo: 
-    //1. rooms are not showing at first search (i need to select dates twice)
     async function getAvailableRooms(e) {
         e.preventDefault();
 
         let availableRooms;
         let availableRoomsJSON;
 
-        try{
+        try {
             availableRooms = await fetch(`http://localhost:5173/reservations?startDate=${startDate}&endDate=${endDate}`, {
                 method: 'GET',
                 headers: {
@@ -60,7 +58,7 @@ export default function Calendar() {
 
         } catch (error) {
             console.error(`Error occured while getting available rooms: ${error.message}`);
-            
+
         }
         console.log(availableRoomsJSON);
         setRooms(availableRoomsJSON.rows);
@@ -70,13 +68,13 @@ export default function Calendar() {
     // open new window with selected room details
     // pass with start/end date, room information, user info
     async function getRoomDetails() {
-        
+
         const roomName = selectedRoom;
         let roomInfo;
         let roomInfoJSON;
         let roomFromFetch;
 
-        try{
+        try {
             roomInfo = await fetch(`http://localhost:5173/room?roomName=${roomName}`, {
                 method: 'GET',
                 headers: {
@@ -85,14 +83,14 @@ export default function Calendar() {
             });
             roomInfoJSON = await roomInfo.json();
 
-        }catch(error){
+        } catch (error) {
             console.log(`Error occured while geeting room details: ${error.message}`);
         }
-        
+
         roomFromFetch = roomInfoJSON.rows[0];
         setSelectedRoom(roomFromFetch);
         navigate('/RoomDetailPage', { state: { room_name: roomFromFetch.room_name, room_price: roomFromFetch.room_price, room_description: roomFromFetch.room_description, room_photo: roomFromFetch.room_photo, room_id: roomFromFetch.room_id, start_date: startDate, end_date: endDate } });
-        
+
     }
 
 
@@ -213,13 +211,13 @@ export default function Calendar() {
                                 <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900" id="tdRoomId">{room.room_name}</td>
                                 <td className="whitespace-nowrap px-4 py-2 text-gray-700">{room.room_price}</td>
                                 <td><div className="align-content:space-between;">
-                                    <input id="checkbox" type="checkbox" onChange={()=>setSelectedRoom(room.room_name)} checked={selectedRoom === room.room_name}  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                    <input id="checkbox" type="checkbox" onChange={() => setSelectedRoom(room.room_name)} checked={selectedRoom === room.room_name} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                                 </div></td>
                             </tr>
                         })}
                     </tbody>
                 </table>
-                
+
 
                 {/* todo: room detail's table and Get Details button wouldn't be shown before clicking Search
                             should i hide Calendar part after clicking Search button? */}
