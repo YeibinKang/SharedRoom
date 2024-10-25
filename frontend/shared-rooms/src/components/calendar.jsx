@@ -193,30 +193,27 @@ export default function Calendar() {
 
                 </form>
 
-                <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm" id="Table">
-                    <thead className="ltr:text-left rtl:text-right">
-                        <tr>
-                            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Photo</th>
-                            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Name</th>
-                            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Price</th>
-                            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Select</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
+                <br></br>
 
-                        {/* todo: input should be center in td */}
-                        {rooms?.map((room, index) => {
-                            return <tr key={room._id}>
-                                <td className="whitespace-nowrap px-4 py-2 text-gray-700 object-scale-down"><img src={room.room_photo} ></img></td>
-                                <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900" id="tdRoomId">{room.room_name}</td>
-                                <td className="whitespace-nowrap px-4 py-2 text-gray-700">{room.room_price}</td>
-                                <td><div className="align-content:space-between;">
-                                    <input id="checkbox" type="checkbox" onChange={() => setSelectedRoom(room.room_name)} checked={selectedRoom === room.room_name} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                </div></td>
-                            </tr>
-                        })}
-                    </tbody>
-                </table>
+
+                <div className="flex flex-row gap-4">
+                    {rooms?.map((room, index) => {
+                        return <div key={room._id} className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                            <img className="rounded-t-lg object-cover h-48 w-96" src={room.room_photo} ></img>
+                            <div className="p-5">
+                                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white" id="tdRoomId">{room.room_name}</h5>
+                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">$ {room.room_price} per night</p>
+                            </div>
+
+
+                            <div className="align-content:space-between;">
+                                <input id="checkbox" type="checkbox" onChange={() => setSelectedRoom(room.room_name)} checked={selectedRoom === room.room_name} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                            </div>
+                        </div>
+                    })}
+                </div>
+
+
 
 
                 {/* todo: room detail's table and Get Details button wouldn't be shown before clicking Search
@@ -234,6 +231,6 @@ export default function Calendar() {
 
 
             </div>
-        </div>
+        </div >
     );
 }

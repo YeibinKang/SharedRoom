@@ -8,6 +8,9 @@ INSERT INTO reservation (reservation_id, total_price, start_date, end_date, user
 INSERT INTO reservation (reservation_id, total_price, start_date, end_date, user_id, room_id) 
 			VALUES(4, 300, '2024-09-16', '2024-09-20', 6, 4);
 
+#Create rooms
+INSERT INTO room (room_name, room_price, room_description, room_photo) VALUES ('The Chill Lounge', 199, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vitae lectus mollis, pulvinar erat convallis, iaculis mauris. Nunc gravida, turpis ac rhoncus feugiat, arcu turpis molestie lorem, ut euismod diam.', 'https://images.pexels.com/photos/259962/pexels-photo-259962.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')
+
 # Available rooms check
 SELECT * FROM room
 WHERE room_id IN (SELECT room_id from reservation 
