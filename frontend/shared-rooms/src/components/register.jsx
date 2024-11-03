@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function Register() {
-    
+
     //todo: need to create functions to handle creating user
-        // when click Sign up button
+    // when click Sign up button
     const navigate = useNavigate();
 
     const [userName, setUserName] = useState("");
@@ -14,17 +14,17 @@ export default function Register() {
     const [userPhone, setUserPhone] = useState("");
     const [userEmail, setUserEmail] = useState("");
 
-    console.log(typeof(userEmail));
+    console.log(typeof (userEmail));
 
-    const handleUserName = (e)=>{
+    const handleUserName = (e) => {
         setUserName(e.target.value);
     }
 
     const handleUserPassword = (e) => {
         setUserPassword(e.target.value);
     }
-    
-    const handleUserPhone = (e) =>{
+
+    const handleUserPhone = (e) => {
         setUserPhone(e.target.value);
     }
 
@@ -33,11 +33,11 @@ export default function Register() {
         console.log(userEmail);
     }
 
-    async function handleCreateUser(e){
+    async function handleCreateUser(e) {
 
         e.preventDefault();
         e.stopPropagation();
-       
+
         console.log(userEmail, userName, userPassword, userPhone);
 
         try {
@@ -47,10 +47,10 @@ export default function Register() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    user_name:userName,
-                    user_password:userPassword,
-                    user_phone:userPhone,
-                    user_email:userEmail,
+                    user_name: userName,
+                    user_password: userPassword,
+                    user_phone: userPhone,
+                    user_email: userEmail,
                 })
             });
 
@@ -58,34 +58,11 @@ export default function Register() {
             console.log(`Error occured while registering a user: ${error.message}`);
         }
 
-        // fetch(`/user`, {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({
-        //         user_name:userName,
-        //         user_password:userPassword,
-        //         user_phone:userPhone,
-        //         user_email:userEmail,
-        //     })
-        // })
-        //     .then((res) => {
-        //         return res.json().then((data) => {
-        //             console.log(data);
-                    
-        //         }).catch((err) => {
-        //             console.log(err.message);
-        //         })
-        //     });
-               
         navigate('/');
-
-
     }
 
 
-    
+
     return (
         <div>
             {/*
@@ -152,15 +129,15 @@ export default function Register() {
                                 placeholder="Enter your phone number"
                             />
 
-   
+
                         </div>
                     </div>
 
-                    
+
 
                     <div className="flex items-center justify-between">
                         <button
-                            type="submit" 
+                            type="submit"
                             className="inline-block rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white"
                         >
                             Sign up

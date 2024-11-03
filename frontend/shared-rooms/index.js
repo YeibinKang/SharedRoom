@@ -254,6 +254,7 @@ app.post('/user/login', async (req, res) => {
 });
 
 
+//Display user's information by userId
 app.get('/MyPage/:id', async (req, res) => {
 
     const currentUserId = req.params.id;
@@ -261,17 +262,17 @@ app.get('/MyPage/:id', async (req, res) => {
     console.log(`user id from api call: ${currentUserId}`);
 
     //bring all reservations with user id
-    let allReservations;
+    let user;
 
     try {
-        allReservations = await pool.query("SELECT * FROM reservation r INNER JOIN room rm ON r.room_id = rm.room_id AND user_id = $1", [currentUserId]);
+        user = await pool.query("SELECT * FROM app_user WHERE user_id = $1", [currentUserId]);
 
     } catch (error) {
         console.error(`Error occured while getting all rooms: ${error.message}`)
         return res.status(500).json({ error: 'Internal server error' });
     }
 
-    res.status(200).json(allReservations);
+    res.status(200).json(user);
 })
 
 
@@ -334,13 +335,14 @@ function calculateDays(startDate, endDate) {
     return difference_in_days;
 }
 
-// get a list of reservations
-
+// get a list of reservations by userId
 app.get("/reservations/:id", async (req, res) => {
 
-    //todo
     const currentUserId = req.params.id;
 
+    console.log(`user id from api call: ${currentUserId}`);
+
+    //bring all reservations with user id
     let allReservations;
 
     try {
@@ -350,6 +352,8 @@ app.get("/reservations/:id", async (req, res) => {
         console.error(`Error occured while getting all rooms: ${error.message}`)
         return res.status(500).json({ error: 'Internal server error' });
     }
+
+    res.status(200).json(allReservations);
 
 });
 

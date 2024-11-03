@@ -20,17 +20,17 @@ export default function RoomDetailPage() {
     //const {roomName, roomPrice} = state;
     const navigate = useNavigate();
 
-    function calculateDays(startDate, endDate){
+    function calculateDays(startDate, endDate) {
         let start_date = new Date(startDate);
         let end_date = new Date(endDate);
-    
+
         let difference_in_time = end_date.getTime() - start_date.getTime();
-        let difference_in_days = Math.round(difference_in_time/(1000*3600*24));
-    
+        let difference_in_days = Math.round(difference_in_time / (1000 * 3600 * 24));
+
         return difference_in_days;
     }
 
-    function getTotalPrice(){
+    function getTotalPrice() {
         let days = calculateDays(startDate, endDate);
         let totalprice = roomPrice * days;
         return totalprice;
@@ -41,9 +41,9 @@ export default function RoomDetailPage() {
 
 
     //make a reservation
-    async function bookRoom(){
+    async function bookRoom() {
         //room id 
-       
+
         let sendReservationJSON;
 
         try {
@@ -53,14 +53,14 @@ export default function RoomDetailPage() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    start_date: {startDate},
-                    end_date: {endDate},
-                    room_id: {roomId},
-                    user_id: {currentUserId}
+                    start_date: { startDate },
+                    end_date: { endDate },
+                    room_id: { roomId },
+                    user_id: { currentUserId }
                 })
             });
             sendReservationJSON = await sendReservation.json();
-            
+
         } catch (error) {
             console.log(`Error occured while making a reservation: ${error.message}`);
         }
@@ -69,30 +69,7 @@ export default function RoomDetailPage() {
         alert("Booking is done!");
         navigate('/');
 
-        //fetch
-        // fetch(`http://localhost:5173/reservation/${roomId}`, {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({
-        //         start_date: {startDate},
-        //         end_date: {endDate},
-        //         room_id: {roomId},
-        //         user_id: 1
-        //     })
-        // })
-        //     .then((res) => {
-        //         return res.json().then((data) => {
-        //             //console.log(data);
-        //             alert("Booking is done!");
-        //             navigate('/');
 
-        //         }).catch((err) => {
-        //             console.log(err.message);
-        //         })
-        //     });
-  
     }
 
 
@@ -111,7 +88,7 @@ export default function RoomDetailPage() {
 
 
                         <div className="w-full md:w-1/2 px-4">
-                        <h2 className="text-3xl font-bold mb-2">Stay from {startDate} to {endDate}</h2>
+                            <h2 className="text-3xl font-bold mb-2">Stay from {startDate} to {endDate}</h2>
                             <h2 className="text-3xl font-bold mb-2">{roomName}</h2>
                             <div className="mb-4">
                                 <span className="text-2xl font-bold mr-2">$ {getTotalPrice()}</span>
@@ -119,8 +96,8 @@ export default function RoomDetailPage() {
                             <div className="mb-3">
                                 <span className="text-1xl font-bold mr-2">$ {roomPrice} *  {stayDays}days</span>
                             </div>
-                            
-                        
+
+
 
                             <div>
                                 <h3 className="text-lg font-semibold mb-2">Room Details:</h3>
@@ -141,7 +118,7 @@ export default function RoomDetailPage() {
                     </div>
                 </div>
 
-                
+
 
             </div>
 

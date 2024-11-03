@@ -1,6 +1,9 @@
 import Navbar from "../components/navbar"
 import Footer from "../components/footer"
 import SideMenu from "../components/SideMenu"
+import UserDetail from "../components/userDetail";
+
+
 
 // user should be logged in
 //if matched: return SideMenu with user'id
