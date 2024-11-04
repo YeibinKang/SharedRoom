@@ -1,7 +1,9 @@
 import Cookies from "js-cookie";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserDetail from "./userDetail";
+import ReservationDetail from "./reservationDetail";
+
 
 
 
@@ -22,7 +24,8 @@ export default function SideMenu() {
 
     const [userReservations, setUserReservations] = useState();
 
-    const [show, setShow] = useState(false);
+    const [showUserDetail, setShowUserDetail] = useState(false);
+    const [reservationShow, setReservationShow] = useState(false);
 
 
     async function getReservationsById(userId) {
@@ -60,26 +63,9 @@ export default function SideMenu() {
 
     //get user's information
     async function getUserInfo() {
-        //fetch user's information
-        let userInfo;
-        try {
-            userInfo = await getUserById(currentId);
-        } catch (error) {
-            console.log(`Error occured while getting a user's information with user id ${currentId}, ${error.message}`);
-        }
 
-
-        console.log(userInfo);
-        console.log(userInfo.rows[0].user_id);
-
-        setUserId(userInfo.rows[0].user_id);
-        setUserName(userInfo.rows[0].user_name);
-        setUserPassword(userInfo.rows[0].user_password);
-        setUserPhone(userInfo.rows[0].user_phone);
-        setUserEmail(userInfo.rows[0].user_email);
-
-        setShow(true);
-
+        setShowUserDetail(true);
+        setReservationShow(false);
     }
 
 
@@ -105,6 +91,11 @@ export default function SideMenu() {
         window.location.reload();
     }
 
+    function onShow() {
+        setReservationShow(true);
+        setShowUserDetail(false);
+        console.log(reservationShow);
+    }
     return (
         <div className="flex space-x-5 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
             <div className="w-32">
@@ -161,11 +152,12 @@ export default function SideMenu() {
 
                     <li>
                         <button
-                            onClick={getReservations}
+                            onClick={onShow}
                             className="block rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700"
                         >
                             Reservations
                         </button>
+
                     </li>
 
                 </ul>
@@ -173,7 +165,11 @@ export default function SideMenu() {
 
             </div>
 
-            {show ? (
+            {showUserDetail ? (<UserDetail />) : (<h1>Hi</h1>)}
+            {reservationShow ? (<ReservationDetail />) : (<h1>null</h1>)}
+            {/* {reservationShow ? (<ReservationDetail></ReservationDetail>) : (<h1>No reservation</h1>)} */}
+
+            {/* {show ? (
                 <div className="pl-30">
 
 
@@ -243,7 +239,7 @@ export default function SideMenu() {
 
                 </div>
 
-            ) : (<h1>Welcome {userName}</h1>)}
+            ) : (<h1>Welcome {userName}</h1>)} */}
 
 
 

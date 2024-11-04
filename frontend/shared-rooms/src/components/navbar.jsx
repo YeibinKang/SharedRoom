@@ -8,56 +8,36 @@ export default function Navbar() {
 
   const navigate = useNavigate();
 
-  const [button, setButton] = useState();
+  const [loggedIn, setLoggedIn] = useState(false);
+
+
+
+  //todo: how to change.. button name to logout
+  /// when the user is successfully logged in
 
   //get a user id from a cookie
   function getUserId() {
     const userIdFromCookie = document.cookie;
     const userId = userIdFromCookie.split('=')[0];
+
     return userId;
   }
-
-  async function changeLogInButton() {
-    let userId = getUserId();
-    let buttonPromise;
-
-    try {
-      buttonPromise = await document.querySelector('#loginButton');
-      setButton(buttonPromise)
-    } catch (error) {
-      console.log(`error message: ${error.message}`);
-    }
-
-    if (userId != "") {
-      button.textContent = "logout";
-    } else {
-      button.textContent = "login";
-    }
-
-  }
-  changeLogInButton();
-
 
   function handleRegsiterClick() {
     navigate('/RegisterPage');
   }
 
-  //handle login/logout
+  //handle login
   function handleLoginClick() {
 
+    navigate('/LoginPage');
+  }
+
+  function clickLogOut() {
     const userId = getUserId();
-
-
-    if (button.textContent == "logout") {
-
-      Cookies.remove(userId);
-      window.location.reload();
-
-    } else {
-      navigate('/LoginPage');
-    }
-
-
+    Cookies.remove(userId);
+    setLoggedIn(false);
+    window.location.reload();
   }
 
   return (
@@ -95,10 +75,14 @@ export default function Navbar() {
 
             <div className="flex items-center gap-4">
               <div className="sm:flex sm:gap-4">
-                <button id="loginButton" className="rounded-md bg-teal-600 px-5 py-2.5 text-sm font-medium text-white shadow"
+                {loggedIn ? (<button id="loginButton" className="rounded-md bg-teal-600 px-5 py-2.5 text-sm font-medium text-white shadow"
+                  onClick={clickLogOut}>
+                  LogOut
+                </button>) : (<button id="loginButton" className="rounded-md bg-teal-600 px-5 py-2.5 text-sm font-medium text-white shadow"
                   onClick={handleLoginClick}>
                   Login
-                </button>
+                </button>)}
+
 
                 <div className="hidden sm:flex">
                   <button className="rounded-md bg-gray-100 px-5 py-2.5 text-sm font-medium text-teal-600" onClick={handleRegsiterClick}>Register</button>
