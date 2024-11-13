@@ -259,8 +259,6 @@ app.get('/MyPage/:id', async (req, res) => {
 
     const currentUserId = req.params.id;
 
-    console.log(`user id from api call: ${currentUserId}`);
-
     //bring all reservations with user id
     let user;
 
@@ -340,13 +338,11 @@ app.get("/reservations/:id", async (req, res) => {
 
     const currentUserId = req.params.id;
 
-    console.log(`user id from api call: ${currentUserId}`);
-
     //bring all reservations with user id
     let allReservations;
 
     try {
-        allReservations = await pool.query("SELECT * FROM reservation r INNER JOIN room rm ON r.room_id = rm.room_id AND user_id = $1", [currentUserId]);
+        allReservations = await pool.query("SELECT * FROM reservation r INNER JOIN room rm ON r.room_id = rm.room_id WHERE user_id = $1", [currentUserId]);
 
     } catch (error) {
         console.error(`Error occured while getting all rooms: ${error.message}`)

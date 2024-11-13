@@ -196,21 +196,37 @@ export default function Calendar() {
                 <br></br>
 
 
-                <div className="flex flex-row gap-4">
-                    {rooms?.map((room, index) => {
-                        return <div key={room._id} className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                            <img className="rounded-t-lg object-cover h-48 w-96" src={room.room_photo} ></img>
-                            <div className="p-5">
-                                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white" id="tdRoomId">{room.room_name}</h5>
-                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">$ {room.room_price} per night</p>
-                            </div>
+                <div className="relative my-6 bg-white shadow-sm rounded-lg">
+                    <div className="grid gap-6 p-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {rooms?.map((room, index) => {
+                            return <div key={room._id} className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                <img className="rounded-t-lg object-cover h-48 w-96" src={room.room_photo} ></img>
+
+                                <div className="p-4">
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <p className="text-slate-800 text-xl font-semibold">
+                                            {room.room_name}
+                                        </p>
+                                        <p className="text-cyan-600 text-xl font-semibold">
+                                            ${room.room_price}
+                                        </p>
+                                    </div>
+                                    <p className="text-slate-600 leading-normal font-light">
+                                        {room.room_description}
+                                    </p>
+
+                                    <div className="rounded-md w-full mt-6 bg-cyan-600 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-cyan-700 focus:shadow-none active:bg-cyan-700 hover:bg-cyan-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                                        <input id="checkbox" type="checkbox" onChange={() => setSelectedRoom(room.room_name)} checked={selectedRoom === room.room_name} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                    </div>
+                                </div>
 
 
-                            <div className="align-content:space-between;">
-                                <input id="checkbox" type="checkbox" onChange={() => setSelectedRoom(room.room_name)} checked={selectedRoom === room.room_name} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+
                             </div>
-                        </div>
-                    })}
+                        })}
+
+                    </div>
+
                 </div>
 
 

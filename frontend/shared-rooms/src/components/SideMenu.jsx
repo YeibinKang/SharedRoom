@@ -165,8 +165,8 @@ export default function SideMenu() {
 
             </div>
 
-            {showUserDetail ? (<UserDetail />) : (<h1>Hi</h1>)}
-            {reservationShow ? (<ReservationDetail />) : (<h1>null</h1>)}
+            {showUserDetail ? (<UserDetail />) : (<h1></h1>)}
+            {reservationShow ? (<ReservationDetail />) : (<h1></h1>)}
             {/* {reservationShow ? (<ReservationDetail></ReservationDetail>) : (<h1>No reservation</h1>)} */}
 
             {/* {show ? (
