@@ -30,6 +30,7 @@ export default function ReservationDetail() {
         const cookieString = document.cookie;
         const currentId = cookieString.split('=')[0];
         getReservationsById(currentId);
+        deleteReservation();
     }, []);
 
     function getDetails(reservation) {
@@ -37,8 +38,38 @@ export default function ReservationDetail() {
         setOpen(true);
     }
 
-    function deleteReservation(reservation) {
+    // todo: delete data based on selected reservation id
+    async function deleteReservation() {
 
+        setOpen(false);
+        const reservationId = selectedReservation.reservation_id;
+
+        console.log(reservationId);
+        let reservation;
+
+        try {
+            reservation = await fetch(`http://localhost:5173/reservation/${reservationId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+        } catch (error) {
+            console.log(`Error occured while deleting a reservation with id: ${reservationId}, ${error.message}`);
+
+        }
+
+
+
+    }
+
+    function DateFormatChange({ dateString }) {
+        return (
+            <div>
+                <p className="text-slate-600 leading-normal font-light">{new Date(dateString).toISOString().split('T')[0]}</p>
+            </div>
+        )
     }
 
     return (
@@ -50,6 +81,8 @@ export default function ReservationDetail() {
                         <div className="p-4">
                             <h3 className="text-lg font-semibold">{reservation.room_name}</h3>
                             <p>${reservation.total_price}</p>
+                            <p>start date: </p><DateFormatChange dateString={reservation.start_date} />
+                            <p>end date: </p><DateFormatChange dateString={reservation.end_date} />
                             <button
                                 onClick={() => getDetails(reservation)}
                                 className="mt-2 bg-blue-600 text-white py-1 px-3 rounded"
@@ -77,6 +110,12 @@ export default function ReservationDetail() {
                                 <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                                     <div className="sm:flex sm:items-start">
                                         <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                                            </svg>
+
+
+
                                         </div>
                                         <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                                             <DialogTitle as="h3" className="text-base font-semibold text-gray-900">
@@ -84,9 +123,15 @@ export default function ReservationDetail() {
                                             </DialogTitle>
                                             <div className="mt-2">
                                                 <p className="text-sm text-gray-500">
-                                                    {selectedReservation.room_description}
+                                                    Description: {selectedReservation.room_description}
                                                 </p>
                                             </div>
+                                            <div className="mt-2">
+                                                <p className="text-sm text-gray-500">
+                                                    Price per night: CAD {selectedReservation.room_price}
+                                                </p>
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -94,7 +139,8 @@ export default function ReservationDetail() {
                                     {/* todo: add delete the reservation function */}
                                     <button
                                         type="button"
-                                        onClick={() => setOpen(false)}
+                                        // onClick={deleteReservation(selectedReservation)}
+                                        onClick={deleteReservation}
                                         className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
                                     >
                                         Delete the reservation

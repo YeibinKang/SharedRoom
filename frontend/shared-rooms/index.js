@@ -384,7 +384,7 @@ app.delete("/reservation/:id", async (req, res) => {
         const deleteReservation = await pool.query("DELETE FROM reservation WHERE reservation_id = $1", [currentReservationId])
             .then((deleted) => {
                 if (deleted.rowCount == 0) {
-                    console.log(`success to delete : ${deleted.rowCount}`);
+                    console.log(`success to delete!`);
                     res.status(200);
                 }
             });
