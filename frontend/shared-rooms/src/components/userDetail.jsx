@@ -40,10 +40,6 @@ export default function UserDetail() {
             console.log(`Error occured while getting a user's information with user id ${currentId}, ${error.message}`);
         }
 
-
-        console.log(userInfo);
-        console.log(userInfo.rows[0].user_id);
-
         setUserName(userInfo.rows[0].user_name);
         setUserPassword(userInfo.rows[0].user_password);
         setUserPhone(userInfo.rows[0].user_phone);
@@ -52,9 +48,10 @@ export default function UserDetail() {
     }
 
     // todo: update button function
-    // getting a value from 
+    // getting a value from the form
     function updateUserInfo() {
         console.log('submit clicked!');
+
     }
 
 

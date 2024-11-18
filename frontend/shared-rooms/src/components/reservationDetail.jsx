@@ -1,97 +1,120 @@
-import Cookies from "js-cookie";
+
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
 export default function ReservationDetail() {
-
-    var response;
-    var cookieString = document.cookie;
-    var currentId = cookieString.split('=')[0];
-    const navigate = useNavigate();
-
-    //user
-
-    const [userReservations, setUserReservations] = useState();
+    const [open, setOpen] = useState(false);
+    const [selectedReservation, setSelectedReservation] = useState(null);
+    const [userReservations, setUserReservations] = useState([]);
+    const navigation = useNavigate();
 
 
     async function getReservationsById(userId) {
         try {
-            response = await fetch(`http://localhost:5173/reservations/${userId}`, {
+            const response = await fetch(`http://localhost:5173/reservations/${userId}`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    'Content-Type': 'application/json',
+                },
             });
-
             const reservationData = await response.json();
-            //const reservationRows = response.json();
-
             setUserReservations(reservationData.rows);
-
-            //console.log(`user's reservations: ${JSON.stringify(userReservations)}`);
-
-            //console.log(`user's ${userReservations.rows[0]}`);
         } catch (error) {
-            console.log(`Error occured while getting a list of reservation with user id ${currentId}, ${error.message}`);
-
+            console.error(`Error: ${error.message}`);
         }
-
     }
 
-    function DateFormatChange({ dateString }) {
-        return (
-            <div>
-                <p className="text-slate-600 leading-normal font-light">{new Date(dateString).toISOString().split('T')[0]}</p>
-            </div>
-        )
-    }
-
-    // Use useEffect to trigger the data fetch on component mount
     useEffect(() => {
+        const cookieString = document.cookie;
+        const currentId = cookieString.split('=')[0];
         getReservationsById(currentId);
-    }, [currentId]);
+    }, []);
 
+    function getDetails(reservation) {
+        setSelectedReservation(reservation);
+        setOpen(true);
+    }
+
+    function deleteReservation(reservation) {
+
+    }
 
     return (
         <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-            {/* Render reservation details or a loading message */}
-
-
-
-            <div className="relative my-6 bg-white shadow-sm rounded-lg">
-                <div className="grid gap-6 p-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {userReservations?.map((reservation, index) => {
-                        return (
-                            <div key={reservation._id || index} className="bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 w-full max-w-xs mx-auto">
-                                <div className="relative p-2.5 h-96 overflow-hidden rounded-xl bg-clip-border">
-                                    <img src={reservation.room_photo} alt="card-image" className="h-full w-full object-cover rounded-md" />
-                                </div>
-
-                                <div className="p-4">
-                                    <div className="mb-2 flex items-center justify-between">
-                                        <p className="text-slate-800 text-xl font-semibold">
-                                            {reservation.room_name}
-                                        </p>
-                                        <p className="text-cyan-600 text-xl font-semibold">
-                                            ${reservation.total_price}
-                                        </p>
-                                    </div>
-
-                                    <p>start date: </p><DateFormatChange dateString={reservation.start_date} />
-                                    <p>end date: </p><DateFormatChange dateString={reservation.end_date} />
-
-                                    <button className="rounded-md w-full mt-6 bg-cyan-600 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-cyan-700 focus:shadow-none active:bg-cyan-700 hover:bg-cyan-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="button">
-                                        Get details
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+            <div className="grid gap-6 p-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {userReservations.map((reservation, index) => (
+                    <div key={index} className="rounded-lg shadow-md bg-white">
+                        <img src={reservation.room_photo} alt="Room" className="rounded-t-lg h-48 w-64" />
+                        <div className="p-4">
+                            <h3 className="text-lg font-semibold">{reservation.room_name}</h3>
+                            <p>${reservation.total_price}</p>
+                            <button
+                                onClick={() => getDetails(reservation)}
+                                className="mt-2 bg-blue-600 text-white py-1 px-3 rounded"
+                            >
+                                Get details
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
 
+            {open && selectedReservation && (
+                <Dialog open={open} onClose={() => setOpen(false)} className="relative z-10">
+                    <DialogBackdrop
+                        transition
+                        className="fixed inset-0 bg-gray-500/75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
+                    />
 
+                    <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+                        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                            <DialogPanel
+                                transition
+                                className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in sm:my-8 sm:w-full sm:max-w-lg data-[closed]:sm:translate-y-0 data-[closed]:sm:scale-95"
+                            >
+                                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                                    <div className="sm:flex sm:items-start">
+                                        <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
+                                        </div>
+                                        <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                            <DialogTitle as="h3" className="text-base font-semibold text-gray-900">
+                                                {selectedReservation.room_name}
+                                            </DialogTitle>
+                                            <div className="mt-2">
+                                                <p className="text-sm text-gray-500">
+                                                    {selectedReservation.room_description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                                    {/* todo: add delete the reservation function */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpen(false)}
+                                        className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                                    >
+                                        Delete the reservation
+                                    </button>
+                                    <button
+                                        type="button"
+                                        data-autofocus
+                                        onClick={() => setOpen(false)}
+                                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </DialogPanel>
+                        </div>
+
+                    </div>
+
+                </Dialog>
+            )}
         </div>
-    )
+    );
 }
