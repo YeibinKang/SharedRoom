@@ -69,27 +69,51 @@ export default function Calendar() {
     // pass with start/end date, room information, user info
     async function getRoomDetails() {
 
-        const roomName = selectedRoom;
+        if (!selectedRoom) {
+            console.error("No room selected. Please select a room");
+            return;
+        }
+
+        const roomId = selectedRoom.room_id;
+
+        console.log(`room id: ${roomId} id`);
         let roomInfo;
         let roomInfoJSON;
-        let roomFromFetch;
+
 
         try {
-            roomInfo = await fetch(`http://localhost:5173/room?roomName=${roomName}`, {
+            roomInfo = await fetch(`http://localhost:5173/room?roomId=${roomId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 }
             });
+
             roomInfoJSON = await roomInfo.json();
+            console.log("API Response:", roomInfoJSON);
+
+            const roomFromFetch = roomInfoJSON.rows[0];
+
+
+            setSelectedRoom(roomFromFetch);
+
+            if (roomFromFetch) {
+                navigate('/RoomDetailPage', { state: { room_name: roomFromFetch.room_name, room_price: roomFromFetch.room_price, room_description: roomFromFetch.room_description, room_photo: roomFromFetch.room_photo, room_id: roomFromFetch.room_id, start_date: startDate, end_date: endDate } });
+
+
+            } else {
+                console.error('Room details not fetching properly');
+            }
+
+
+
 
         } catch (error) {
-            console.log(`Error occured while geeting room details: ${error.message}`);
+            console.log(`Error occured while getting room details: ${error.message}`);
         }
 
-        roomFromFetch = roomInfoJSON.rows[0];
-        setSelectedRoom(roomFromFetch);
-        navigate('/RoomDetailPage', { state: { room_name: roomFromFetch.room_name, room_price: roomFromFetch.room_price, room_description: roomFromFetch.room_description, room_photo: roomFromFetch.room_photo, room_id: roomFromFetch.room_id, start_date: startDate, end_date: endDate } });
+
+
 
     }
 
@@ -216,7 +240,7 @@ export default function Calendar() {
                                     </p>
 
                                     <div className="rounded-md w-full mt-6 bg-cyan-600 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-cyan-700 focus:shadow-none active:bg-cyan-700 hover:bg-cyan-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
-                                        <input id="checkbox" type="checkbox" onChange={() => setSelectedRoom(room.room_name)} checked={selectedRoom === room.room_name} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                        <input id="checkbox" type="checkbox" onClick={() => { if (selectedRoom?.room_id === room.room_id) { setSelectedRoom(null) } else { setSelectedRoom(room) } }} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                                     </div>
                                 </div>
 

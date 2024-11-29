@@ -30,7 +30,7 @@ export default function SideMenu() {
 
     async function getReservationsById(userId) {
         try {
-            reservations = await fetch(`http://localhost:5173/reservations/${userId}`, {
+            reservations = await fetch(`http://localhost:5174/reservations/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -45,9 +45,11 @@ export default function SideMenu() {
     }
 
 
+
+
     async function getUserById(userId) {
         try {
-            user = await fetch(`http://localhost:5173/user/${userId}`, {
+            user = await fetch(`http://localhost:5174/user/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -97,8 +99,9 @@ export default function SideMenu() {
         console.log(reservationShow);
     }
     return (
-        <div className="flex space-x-5 mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-            <div className="w-32">
+        <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+
+            <div className="w-32 h-64 bg-gray-100 h-screen">
 
                 <ul className="mt-6 space-y-1">
 
@@ -163,83 +166,14 @@ export default function SideMenu() {
                 </ul>
 
 
+
             </div>
+
+
 
             {showUserDetail ? (<UserDetail />) : (<h1></h1>)}
             {reservationShow ? (<ReservationDetail />) : (<h1></h1>)}
-            {/* {reservationShow ? (<ReservationDetail></ReservationDetail>) : (<h1>No reservation</h1>)} */}
 
-            {/* {show ? (
-                <div className="pl-30">
-
-
-                    <form action="#" className="max-w-screen-xl" >
-                        <div>
-                            <label htmlFor="name" >User Name</label>
-                            <div className="relative">
-                                <input
-                                    type="name" name="user_name"
-                                    className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-                                    placeholder={userName}
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label htmlFor="password">Password</label>
-
-                            <div className="relative">
-                                <input
-                                    type="password" name="user_password"
-                                    className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-                                    placeholder={userPassword}
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label htmlFor="email">User Email</label>
-
-                            <div className="relative">
-                                <input
-                                    type="email" name="user_email"
-                                    className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-                                    placeholder={userEmail}
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label htmlFor="number">Phone number</label>
-
-                            <div className="relative">
-                                <input
-                                    type="tel" name="user_phone"
-                                    className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-                                    placeholder={userPhone}
-                                />
-
-
-                            </div>
-                        </div>
-
-
-
-                        <div className="flex items-center justify-between">
-                            <button
-                                type="submit"
-                                className="inline-block rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white"
-                            >
-                                Save
-                            </button>
-                        </div>
-
-                    </form>
-
-
-                </div>
-
-            ) : (<h1>Welcome {userName}</h1>)} */}
 
 
 

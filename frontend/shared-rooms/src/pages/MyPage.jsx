@@ -2,6 +2,7 @@ import Navbar from "../components/navbar"
 import Footer from "../components/footer"
 import SideMenu from "../components/SideMenu"
 import UserDetail from "../components/userDetail";
+import ReservationDetail from "../components/reservationDetail";
 
 
 
@@ -20,14 +21,17 @@ export default function MyPage() {
         return (
             <div>
                 <Navbar></Navbar>
-                <SideMenu></SideMenu>
+
+                <SideMenu />
+
                 <Footer></Footer>
             </div>
 
 
         )
 
-    } else {
+    }
+    else {
         return (
             <div>
                 <Navbar></Navbar>

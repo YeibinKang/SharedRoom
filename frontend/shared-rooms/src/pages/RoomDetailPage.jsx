@@ -16,7 +16,8 @@ export default function RoomDetailPage() {
     const startDate = location.state.start_date;
     const endDate = location.state.end_date;
     const stayDays = calculateDays(startDate, endDate);
-    const currentUserId = document.cookie;
+    const userIdFromCookie = document.cookie;
+    const currentUserId = parseInt(userIdFromCookie.split('=')[0]);
     //const {roomName, roomPrice} = state;
     const navigate = useNavigate();
 
@@ -45,6 +46,11 @@ export default function RoomDetailPage() {
         //room id 
 
         let sendReservationJSON;
+
+        //user Validation
+        if (!currentUserId) {
+            console.error('User should log in before booking');
+        }
 
         try {
             let sendReservation = await fetch(`http://localhost:5173/reservation`, {

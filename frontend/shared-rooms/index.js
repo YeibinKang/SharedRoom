@@ -10,19 +10,21 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import Cookies from "js-cookie";
 import verify from "jsonwebtoken";
-import { BrowserRouter, Navigate } from "react-router-dom";
-import { useEffect } from "react";
-
 
 
 dotenv.config();
 
 const sercretKey = process.env.JWT_SECRET;
+
 var app = express();
+
+
 app.use(cors());
 
 app.use(express.json());
 app.use(cookieParser(sercretKey));
+
+
 
 let currentUserId;
 
@@ -51,11 +53,11 @@ app.post("/room", async (req, res) => {
 
 // Get a room with provided room name
 app.get("/room", async (req, res) => {
-    const roomName = req.query.roomName;
+    const roomId = req.query.roomId;
     let currentRoom;
 
     try {
-        currentRoom = await pool.query("SELECT * FROM room WHERE room_name = $1", [roomName]);
+        currentRoom = await pool.query("SELECT * FROM room WHERE room_id = $1", [roomId]);
     } catch (e) {
         console.log(`Error occured while getting a room information: ${e.message}`);
         return res.status(500);
@@ -276,49 +278,101 @@ app.get('/MyPage/:id', async (req, res) => {
 
 
 // create a reservation
+// app.post("/reservation", async (req, res) => {
+
+//     const currentRoomId = req.body.room_id.roomId;
+//     const start_date = req.body.start_date.startDate;
+//     const end_date = req.body.end_date.endDate;
+//     let newReservation;
+//     let pricePerNightPromise;
+//     let pricePerNight;
+//     let stay_days = calculateDays(start_date, end_date);
+//     const user_id = parseInt(currentUserId);
+//     let total_price = 0;
+//     let newReservationPromise;
+//     let reservationId;
+//     let updateReservationPromise;
+
+//     try {
+//         newReservation = await pool.query("INSERT INTO reservation (start_date, end_date, room_id, user_id) VALUES(TO_DATE($1::text, 'YYYY-MM-DD'), TO_DATE($2::text, 'YYYY-MM-DD'), $3, $4)", [start_date, end_date, currentRoomId, user_id]);
+
+//         //if inserting is success, keep doing it
+//         //if not, do noting
+
+
+
+//         //join
+//         if (newReservation.rowCount == 1) {
+
+//             console.log(reservationId);
+//             newReservationPromise = await pool.query("SELECT (reservation_id) FROM reservation WHERE start_date = TO_DATE($1::text, 'YYYY-MM-DD') AND end_date = TO_DATE($2::text, 'YYYY-MM-DD') AND user_id = $3 AND room_id = $4", [start_date, end_date, user_id, currentRoomId]);
+//             console.log(`new generated id: ${newReservationPromise.rows[0]}`);
+//             reservationId = newReservationPromise.rows[0].reservation_id;
+
+
+//             pricePerNightPromise = await pool.query("SELECT (room_price) FROM room WHERE room_id = $1", [currentRoomId]);
+//             // //update price and query 
+//             pricePerNight = pricePerNightPromise.rows[0].room_price;
+//             total_price = pricePerNight * stay_days;
+//             updateReservationPromise = await pool.query("UPDATE reservation SET total_price = $1 WHERE reservation_id = $2", [total_price, reservationId]);
+
+//         } else {
+//             return res.status(500).json({ Error: 'SQL: Inserting failed' });
+//         }
+
+//     } catch (err) {
+//         console.error(`Error occured while creating a reservation: ${err.message}`);
+//         return res.status(500).json({ error: 'Internal server error' });
+//     }
+
+// });
 app.post("/reservation", async (req, res) => {
-
-    const currentRoomId = req.body.room_id.roomId;
-    const start_date = req.body.start_date.startDate;
-    const end_date = req.body.end_date.endDate;
-    let newReservation;
-    let pricePerNightPromise;
-    let pricePerNight;
-    let stay_days = calculateDays(start_date, end_date);
-    const user_id = currentUserId;
-    let total_price = 0;
-    let newReservationPromise;
-    let reservationId;
-    let updateReservationPromise;
-
     try {
-        newReservation = await pool.query("INSERT INTO reservation (start_date, end_date, room_id, user_id) VALUES(TO_DATE($1::text, 'YYYY-MM-DD'), TO_DATE($2::text, 'YYYY-MM-DD'), $3, $4)", [start_date, end_date, currentRoomId, user_id]);
+        const currentRoomId = req.body.room_id.roomId;
+        const start_date = req.body.start_date.startDate;
+        const end_date = req.body.end_date.endDate;
+        const user_id = parseInt(currentUserId);
+        let reservationId;
 
-        //if inserting is success, keep doing it
-        //if not, do noting
+        const newReservation = await pool.query(
+            "INSERT INTO reservation (start_date, end_date, room_id, user_id) VALUES(TO_DATE($1::text, 'YYYY-MM-DD'), TO_DATE($2::text, 'YYYY-MM-DD'), $3, $4)",
+            [start_date, end_date, currentRoomId, user_id]
+        );
 
         if (newReservation.rowCount == 1) {
+            const newReservationPromise = await pool.query(
+                "SELECT (reservation_id) FROM reservation WHERE start_date = TO_DATE($1::text, 'YYYY-MM-DD') AND end_date = TO_DATE($2::text, 'YYYY-MM-DD') AND user_id = $3 AND room_id = $4",
+                [start_date, end_date, user_id, currentRoomId]
+            );
 
-            newReservationPromise = await pool.query("SELECT (reservation_id) FROM reservation WHERE start_date = TO_DATE($1::text, 'YYYY-MM-DD') AND end_date = TO_DATE($2::text, 'YYYY-MM-DD') AND user_id = $3 AND room_id = $4", [start_date, end_date, user_id, currentRoomId]);
-            console.log(`new generated id: ${newReservationPromise.rows[0].reservation_id}`);
             reservationId = newReservationPromise.rows[0].reservation_id;
 
+            const pricePerNightPromise = await pool.query(
+                "SELECT (room_price) FROM room WHERE room_id = $1",
+                [currentRoomId]
+            );
 
-            pricePerNightPromise = await pool.query("SELECT (room_price) FROM room WHERE room_id = $1", [currentRoomId]);
-            // //update price and query 
-            pricePerNight = pricePerNightPromise.rows[0].room_price;
-            total_price = pricePerNight * stay_days;
-            updateReservationPromise = await pool.query("UPDATE reservation SET total_price = $1 WHERE reservation_id = $2", [total_price, reservationId]);
+            const pricePerNight = pricePerNightPromise.rows[0].room_price;
+            const stay_days = calculateDays(start_date, end_date);
+            const total_price = pricePerNight * stay_days;
 
+            await pool.query(
+                "UPDATE reservation SET total_price = $1 WHERE reservation_id = $2",
+                [total_price, reservationId]
+            );
+
+            // Send a response back
+            res.status(201).json({
+                message: 'Reservation created successfully',
+                reservationId: reservationId
+            });
         } else {
-            return res.status(500).json({ Error: 'SQL: Inserting failed' });
+            res.status(500).json({ error: 'SQL: Inserting failed' });
         }
-
     } catch (err) {
-        console.error(`Error occured while creating a reservation: ${err.message}`);
-        return res.status(500).json({ error: 'Internal server error' });
+        console.error(`Error occurred while creating a reservation: ${err.message}`);
+        res.status(500).json({ error: 'Internal server error' });
     }
-
 });
 
 
@@ -378,16 +432,22 @@ app.get("/reservations", async (req, res) => {
 // todo: current logged in user, selected room id
 // id = reservation id
 app.delete("/reservation/:id", async (req, res) => {
+
+
     try {
         const currentReservationId = req.params.id;
 
         const deleteReservation = await pool.query("DELETE FROM reservation WHERE reservation_id = $1", [currentReservationId])
             .then((deleted) => {
                 if (deleted.rowCount == 0) {
+                    console.log('Cannot delete');
+                } else {
                     console.log(`success to delete!`);
-                    res.status(200);
+                    res.status(200).json({ message: 'Reservation deleted successfully' });
                 }
             });
+
+
 
 
     } catch (error) {
