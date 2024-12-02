@@ -161,23 +161,37 @@ app.post("/user", async (req, res) => {
 
 //Update user information
 // cannot change user name
+// app.put("/user/:id", async (req, res) => {
+
+//     let updatedUser;
+
+//     try {
+//         const currentUserId = req.params.id;
+//         const userInfo = req.body;
+//         updatedUser = await pool.query("UPDATE app_user SET user_password = crypt($1, gen_salt('md5')), user_phone = $2, user_email = $3 WHERE user_id = $4", [userInfo.user_password, userInfo.user_phone, userInfo.user_email, currentUserId]);
+
+//     } catch (error) {
+//         console.error(`Error occured while updating a user info: ${error.message}`);
+//         return res.status(500).json({ error: 'Internal server error' });
+//     }
+
+//     return res.status(200);
+
+// });
+
+//update user's password
 app.put("/user/:id", async (req, res) => {
-
-    let updatedUser;
-
     try {
         const currentUserId = req.params.id;
-        const userInfo = req.body;
-        updatedUser = await pool.query("UPDATE app_user SET user_password = crypt($1, gen_salt('md5')), user_phone = $2, user_email = $3 WHERE user_id = $4", [userInfo.user_password, userInfo.user_phone, userInfo.user_email, currentUserId]);
-
+        const pw = req.body.newPw;
+        console.log(`pw from body: ${pw}`);
+        const updatedInfo = await pool.query("UPDATE app_user SET user_password = $1 WHERE user_id = $2", [pw, currentUserId]);
+        res.status(200).json(updatedInfo.rowCount);
     } catch (error) {
-        console.error(`Error occured while updating a user info: ${error.message}`);
+        console.error(`Error occured while updating user's password :${error.message}`);
         return res.status(500).json({ error: 'Internal server error' });
     }
-
-    return res.status(200);
-
-});
+})
 
 
 //Get user information
