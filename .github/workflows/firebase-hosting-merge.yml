@@ -21,3 +21,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SHAREDROOM_65BF7 }}
           channelId: live
           projectId: sharedroom-65bf7
+          entryPoint: ./frontend/shared-rooms
