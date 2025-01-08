@@ -65,11 +65,10 @@ export default function Navbar() {
                 </li>
 
                 <li>
-                  <a className="text-gray-500 transition hover:text-gray-500/75" href="/AboutPage"> About us </a>
+                  <Link to="/AboutPage" className="text-gray-500 transition hover:text-gray-500/75">About us</Link>
                 </li>
 
                 <li>
-                  {/* <a className="text-gray-500 transition hover:text-gray-500/75" href="/MyPage"> My Page </a> */}
                   <Link to="/MyPage" className="text-gray-500 transition hover:text-gray-500/75">My Page</Link>
                 </li>
               </ul>
