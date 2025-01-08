@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import { Link } from "react-router-dom";
 
 
 
@@ -68,7 +69,8 @@ export default function Navbar() {
                 </li>
 
                 <li>
-                  <a className="text-gray-500 transition hover:text-gray-500/75" href="/MyPage"> My Page </a>
+                  {/* <a className="text-gray-500 transition hover:text-gray-500/75" href="/MyPage"> My Page </a> */}
+                  <Link to="/MyPage" className="text-gray-500 transition hover:text-gray-500/75">My Page</Link>
                 </li>
               </ul>
             </nav>
