@@ -147,7 +147,9 @@ app.post("/user", async (req, res) => {
     }
 
     const accessToken = jwt.sign({ id: currentUserId.rows[0].user_id }, sercretKey);
-    res.cookie(currentUserId.rows[0].user_id, accessToken, { maxAge: 1200000, httpOnly: true, secure: true, sameSite: 'None' });
+    const isProduction = process.env.NODE_ENV == 'production';
+
+    res.cookie(currentUserId.rows[0].user_id, accessToken, { maxAge: 1200000, httpOnly: true, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax' });
     res.status(200).json({
         user_id: currentUserId.rows[0].user_id,
         accessToken
