@@ -147,7 +147,7 @@ app.post("/user", async (req, res) => {
     }
 
     const accessToken = jwt.sign({ id: currentUserId.rows[0].user_id }, sercretKey);
-    res.cookie(currentUserId.rows[0].user_id, accessToken, { maxAge: 1200000 });
+    res.cookie(currentUserId.rows[0].user_id, accessToken, { maxAge: 1200000, httpOnly: true, secure: true, sameSite: 'None' });
     res.status(200).json({
         user_id: currentUserId.rows[0].user_id,
         accessToken
